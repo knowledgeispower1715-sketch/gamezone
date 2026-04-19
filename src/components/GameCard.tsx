@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import type { Game } from "@/data/games";
 import FavoriteButton from "./FavoriteButton";
@@ -27,18 +28,27 @@ const badgeStyle: Record<string, string> = {
   Endless: "bg-amber-500/15 text-amber-300 border-amber-500/30",
 };
 
-export default function GameCard({ game, isFav, onToggleFav, playCount }: GameCardProps) {
+function GameCardInner({ game, isFav, onToggleFav, playCount }: GameCardProps) {
   return (
     <Link href={`/game/${game.id}`} className="group block">
       <div className="relative overflow-hidden rounded-xl border border-gray-800/60 bg-gray-900/50 transition-all duration-300 hover:border-gray-600/60 hover:shadow-xl hover:shadow-purple-500/5 hover:-translate-y-1">
         {/* Thumbnail */}
-        <div className="relative aspect-video overflow-hidden">
+        <div className="relative aspect-video overflow-hidden bg-gray-800">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={game.thumb}
             alt={game.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              // Fallback if CDN thumbnail fails
+              const target = e.target as HTMLImageElement;
+              if (!target.dataset.fallback) {
+                target.dataset.fallback = "1";
+                target.src = `https://picsum.photos/seed/${game.id}/480/270`;
+              }
+            }}
           />
 
           {/* Hover overlay */}
@@ -49,7 +59,11 @@ export default function GameCard({ game, isFav, onToggleFav, playCount }: GameCa
           {/* Play button — always visible on mobile, hover on desktop */}
           <div className="absolute inset-0 flex items-center justify-center opacity-100 sm:opacity-0 transition-all duration-300 sm:group-hover:opacity-100">
             <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-purple-600/80 sm:bg-white/15 backdrop-blur-md border border-white/20 shadow-2xl transition-transform duration-300 group-hover:scale-110">
-              <svg className="h-6 w-6 sm:h-7 sm:w-7 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-6 w-6 sm:h-7 sm:w-7 text-white ml-0.5"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
@@ -63,7 +77,9 @@ export default function GameCard({ game, isFav, onToggleFav, playCount }: GameCa
           {/* Play count badge */}
           {playCount !== undefined && playCount > 0 && (
             <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-medium text-gray-300 backdrop-blur-sm">
-              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
               {playCount}
             </div>
           )}
@@ -80,7 +96,6 @@ export default function GameCard({ game, isFav, onToggleFav, playCount }: GameCa
             >
               {game.category}
             </span>
-            {/* Play Now text — always visible */}
             <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-400 transition-colors group-hover:text-purple-300">
               Play Now &rarr;
             </span>
@@ -90,3 +105,7 @@ export default function GameCard({ game, isFav, onToggleFav, playCount }: GameCa
     </Link>
   );
 }
+
+// Memoize to prevent re-renders when parent state changes
+const GameCard = memo(GameCardInner);
+export default GameCard;

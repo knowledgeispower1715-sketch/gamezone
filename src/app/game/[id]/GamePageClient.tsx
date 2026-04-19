@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, memo } from "react";
 import Link from "next/link";
 import type { Game } from "@/data/games";
 import AdBanner from "@/components/AdBanner";
@@ -24,6 +24,47 @@ interface Props {
   alsoLike: Game[];
 }
 
+// Memoized related game card to reduce re-renders
+const RelatedCard = memo(function RelatedCard({
+  game,
+  showBadge,
+}: {
+  game: Game;
+  showBadge?: boolean;
+}) {
+  return (
+    <Link
+      href={`/game/${game.id}`}
+      className="group overflow-hidden rounded-xl border border-gray-800/50 bg-gray-900/40 transition-all hover:border-gray-600/50 hover:-translate-y-0.5"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={game.thumb}
+        alt={game.title}
+        className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        loading="lazy"
+        decoding="async"
+      />
+      <div className="p-2 flex items-center justify-between">
+        <p className="truncate text-xs font-medium text-gray-300 group-hover:text-white">
+          {game.title}
+        </p>
+        {showBadge ? (
+          <span
+            className={`shrink-0 ml-1 rounded-full border px-1.5 py-0.5 text-[8px] font-medium uppercase ${badgeStyle[game.category] ?? ""}`}
+          >
+            {game.category}
+          </span>
+        ) : (
+          <span className="text-[9px] font-semibold text-purple-400 shrink-0 ml-1">
+            PLAY
+          </span>
+        )}
+      </div>
+    </Link>
+  );
+});
+
 export default function GamePageClient({ game, related, alsoLike }: Props) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { addRecent } = useRecentlyPlayed();
@@ -34,32 +75,70 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeFailed, setIframeFailed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [, setAudioEnabled] = useState(false);
+  const [showAudioPrompt, setShowAudioPrompt] = useState(true);
+  const loadedRef = useRef(false);
 
-  // Track play + auto-scroll to game area
+  // Track play + auto-scroll
   useEffect(() => {
     addRecent(game.id);
     increment(game.id);
-    // Auto-scroll to game with a small delay for layout
     const t = setTimeout(() => {
-      gameAreaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      gameAreaRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 200);
     return () => clearTimeout(t);
   }, [game.id, addRecent, increment]);
 
-  // Iframe load timeout — if not loaded in 15s, show fallback
+  // Iframe load timeout — 12s fallback
   useEffect(() => {
+    loadedRef.current = false;
     setIframeLoaded(false);
     setIframeFailed(false);
+    setShowAudioPrompt(true);
+    setAudioEnabled(false);
+
     const timeout = setTimeout(() => {
-      if (!iframeLoaded) setIframeFailed(true);
-    }, 15000);
+      if (!loadedRef.current) {
+        setIframeFailed(true);
+      }
+    }, 12000);
+
     return () => clearTimeout(timeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.id]);
 
   const handleIframeLoad = useCallback(() => {
+    loadedRef.current = true;
     setIframeLoaded(true);
     setIframeFailed(false);
+  }, []);
+
+  // Enable audio on user click (required by browser autoplay policies)
+  const enableAudio = useCallback(() => {
+    setAudioEnabled(true);
+    setShowAudioPrompt(false);
+    // Focus the iframe so game receives keyboard input
+    iframeRef.current?.focus();
+  }, []);
+
+  // Retry loading
+  const retryLoad = useCallback(() => {
+    loadedRef.current = false;
+    setIframeFailed(false);
+    setIframeLoaded(false);
+    if (iframeRef.current) {
+      const src = iframeRef.current.src;
+      iframeRef.current.src = "";
+      requestAnimationFrame(() => {
+        if (iframeRef.current) iframeRef.current.src = src;
+      });
+    }
+    // Reset timeout
+    setTimeout(() => {
+      if (!loadedRef.current) setIframeFailed(true);
+    }, 12000);
   }, []);
 
   // Fullscreen toggle
@@ -67,13 +146,17 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     const el = gameAreaRef.current;
     if (!el) return;
     if (!document.fullscreenElement) {
-      el.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+      el.requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch(() => {});
     } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      document.exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch(() => {});
     }
   }, []);
 
-  // Listen for fullscreen changes (e.g., user presses Esc)
+  // Fullscreen change listener
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handler);
@@ -93,15 +176,12 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           </svg>
           All Games
         </Link>
-
         <div className="flex-1" />
-
         <span
           className={`rounded-full border px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${badgeStyle[game.category] ?? "bg-gray-700 text-gray-300 border-gray-600"}`}
         >
           {game.category}
         </span>
-
         <FavoriteButton
           isFav={isFavorite(game.id)}
           onToggle={() => toggleFavorite(game.id)}
@@ -117,30 +197,37 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
       {/* ── GAME IFRAME CONTAINER ── */}
       <div
         ref={gameAreaRef}
-        className={`relative overflow-hidden rounded-2xl border border-gray-800/60 bg-black shadow-2xl shadow-purple-500/5 scroll-mt-20 ${isFullscreen ? "rounded-none" : ""}`}
+        className={`relative overflow-hidden rounded-2xl border border-gray-800/60 bg-black shadow-2xl shadow-purple-500/5 scroll-mt-4 ${isFullscreen ? "rounded-none" : ""}`}
       >
         {/* Loading spinner */}
         {!iframeLoaded && !iframeFailed && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-950">
             <div className="game-spinner mb-4" />
-            <p className="text-sm text-gray-400 animate-pulse">Loading {game.title}...</p>
+            <p className="text-sm text-gray-400 animate-pulse">
+              Loading {game.title}...
+            </p>
+            <p className="mt-2 text-[11px] text-gray-600">
+              This may take a few seconds
+            </p>
           </div>
         )}
 
-        {/* Error fallback */}
+        {/* Error / timeout fallback */}
         {iframeFailed && !iframeLoaded && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-950 p-8 text-center">
             <svg className="h-12 w-12 text-gray-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
             </svg>
-            <p className="text-sm font-medium text-gray-300">Game is taking too long to load</p>
+            <p className="text-sm font-medium text-gray-300">
+              Game failed to load
+            </p>
             <p className="text-xs text-gray-500 max-w-sm">
-              This can happen if the game server is slow or blocks iframe embedding.
-              Try refreshing or opening the game directly.
+              The game server may be slow or temporarily unavailable. Try
+              refreshing or opening the game directly.
             </p>
             <div className="mt-2 flex gap-2">
               <button
-                onClick={() => { setIframeFailed(false); setIframeLoaded(false); }}
+                onClick={retryLoad}
                 className="rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white hover:bg-purple-500 transition-colors"
               >
                 Retry
@@ -157,9 +244,37 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           </div>
         )}
 
+        {/* Audio enable overlay — tap to play with sound */}
+        {iframeLoaded && showAudioPrompt && !iframeFailed && (
+          <div
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm cursor-pointer animate-fade-in-up"
+            onClick={enableAudio}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              enableAudio();
+            }}
+          >
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-purple-500/30 bg-gray-900/90 px-8 py-6 shadow-2xl shadow-purple-500/20">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg shadow-purple-500/40 audio-pulse">
+                <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-white">
+                Tap to Play with Sound
+              </p>
+              <p className="text-[11px] text-gray-400">
+                Click anywhere to enable game audio
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Responsive iframe */}
         <div className="aspect-video w-full">
           <iframe
             ref={iframeRef}
+            data-game={game.id}
             src={game.url}
             title={`Play ${game.title}`}
             className="h-full w-full"
@@ -167,25 +282,30 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             loading="lazy"
             onLoad={handleIframeLoad}
+            style={{
+              touchAction: "manipulation",
+            }}
           />
         </div>
 
-        {/* Fullscreen button */}
-        <button
-          onClick={toggleFullscreen}
-          className="absolute bottom-3 right-3 z-20 flex h-9 w-9 items-center justify-center rounded-lg bg-black/60 text-gray-300 backdrop-blur-sm transition-all hover:bg-black/80 hover:text-white"
-          title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-        >
-          {isFullscreen ? (
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25" />
-            </svg>
-          ) : (
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-            </svg>
-          )}
-        </button>
+        {/* Bottom controls */}
+        <div className="absolute bottom-3 right-3 z-20 flex gap-2">
+          <button
+            onClick={toggleFullscreen}
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/60 text-gray-300 backdrop-blur-sm transition-all hover:bg-black/80 hover:text-white"
+            title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          >
+            {isFullscreen ? (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ── Below-game ad ── */}
@@ -203,11 +323,14 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           <div className="mt-4 rounded-lg bg-gray-800/40 p-3">
             <p className="text-xs text-gray-500">
               <strong className="text-gray-300">Controls:</strong> Use keyboard
-              and mouse. Click the game area to focus. Use the
-              <button onClick={toggleFullscreen} className="mx-1 inline-flex items-center rounded border border-gray-600 bg-gray-700 px-1.5 py-0.5 text-[10px] text-purple-300 hover:bg-gray-600 transition-colors">
-                ⛶ Fullscreen
-              </button>
-              button for the best experience.
+              and mouse. Tap the game area on mobile to focus.{" "}
+              <button
+                onClick={toggleFullscreen}
+                className="mx-1 inline-flex items-center rounded border border-gray-600 bg-gray-700 px-1.5 py-0.5 text-[10px] text-purple-300 hover:bg-gray-600 transition-colors"
+              >
+                Fullscreen
+              </button>{" "}
+              for the best experience.
             </p>
           </div>
         </div>
@@ -222,18 +345,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
             {related.map((r) => (
-              <Link
-                key={r.id}
-                href={`/game/${r.id}`}
-                className="group overflow-hidden rounded-xl border border-gray-800/50 bg-gray-900/40 transition-all hover:border-gray-600/50 hover:-translate-y-0.5"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={r.thumb} alt={r.title} className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                <div className="p-2 flex items-center justify-between">
-                  <p className="truncate text-xs font-medium text-gray-300 group-hover:text-white">{r.title}</p>
-                  <span className="text-[9px] font-semibold text-purple-400 shrink-0 ml-1">PLAY</span>
-                </div>
-              </Link>
+              <RelatedCard key={r.id} game={r} />
             ))}
           </div>
         </section>
@@ -247,20 +359,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
             {alsoLike.map((r) => (
-              <Link
-                key={r.id}
-                href={`/game/${r.id}`}
-                className="group overflow-hidden rounded-xl border border-gray-800/50 bg-gray-900/40 transition-all hover:border-gray-600/50 hover:-translate-y-0.5"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={r.thumb} alt={r.title} className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                <div className="p-2 flex items-center justify-between">
-                  <p className="truncate text-xs font-medium text-gray-300 group-hover:text-white">{r.title}</p>
-                  <span className={`shrink-0 ml-1 rounded-full border px-1.5 py-0.5 text-[8px] font-medium uppercase ${badgeStyle[r.category] ?? ""}`}>
-                    {r.category}
-                  </span>
-                </div>
-              </Link>
+              <RelatedCard key={r.id} game={r} showBadge />
             ))}
           </div>
         </section>

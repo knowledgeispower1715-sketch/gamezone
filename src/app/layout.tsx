@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -8,11 +8,19 @@ const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
+  display: "swap",
 });
 
-// ══════════════════════════════════════════════
-// SEO METADATA — Edit these for your brand
-// ══════════════════════════════════════════════
+// ── Viewport — prevents zoom issues on mobile ──
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#030712",
+};
+
+// ── SEO Metadata ──
 export const metadata: Metadata = {
   title: {
     default: "GameZone — Play Free Online Games | No Download Required",
@@ -59,14 +67,20 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        {/* ════════════════════════════════════════════
-            GOOGLE ADSENSE — Paste your AdSense script here
-            ════════════════════════════════════════════
-            <script
-              async
-              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-              crossOrigin="anonymous"
-            />
+        {/* Preconnect to game CDN for faster loading */}
+        <link rel="preconnect" href="https://html5.gamedistribution.com" />
+        <link rel="preconnect" href="https://img.gamedistribution.com" />
+        <link rel="dns-prefetch" href="https://html5.gamedistribution.com" />
+        <link rel="dns-prefetch" href="https://img.gamedistribution.com" />
+
+        {/*
+          GOOGLE ADSENSE — Paste your AdSense script here:
+
+          <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+            crossOrigin="anonymous"
+          />
         */}
       </head>
       <body
