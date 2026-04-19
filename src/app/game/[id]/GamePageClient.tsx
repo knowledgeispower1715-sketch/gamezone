@@ -24,7 +24,7 @@ interface Props {
   alsoLike: Game[];
 }
 
-// Memoized related game card to reduce re-renders
+// Memoized related game card
 const RelatedCard = memo(function RelatedCard({
   game,
   showBadge,
@@ -44,6 +44,13 @@ const RelatedCard = memo(function RelatedCard({
         className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105"
         loading="lazy"
         decoding="async"
+        onError={(e) => {
+          const t = e.target as HTMLImageElement;
+          if (!t.dataset.fb) {
+            t.dataset.fb = "1";
+            t.src = `https://picsum.photos/seed/${game.id}/480/270`;
+          }
+        }}
       />
       <div className="p-2 flex items-center justify-between">
         <p className="truncate text-xs font-medium text-gray-300 group-hover:text-white">
@@ -75,7 +82,6 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeFailed, setIframeFailed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [, setAudioEnabled] = useState(false);
   const [showAudioPrompt, setShowAudioPrompt] = useState(true);
   const loadedRef = useRef(false);
 
@@ -88,23 +94,22 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         behavior: "smooth",
         block: "start",
       });
-    }, 200);
+    }, 300);
     return () => clearTimeout(t);
   }, [game.id, addRecent, increment]);
 
-  // Iframe load timeout — 12s fallback
+  // Iframe load timeout — 15s then show fallback
   useEffect(() => {
     loadedRef.current = false;
     setIframeLoaded(false);
     setIframeFailed(false);
     setShowAudioPrompt(true);
-    setAudioEnabled(false);
 
     const timeout = setTimeout(() => {
       if (!loadedRef.current) {
         setIframeFailed(true);
       }
-    }, 12000);
+    }, 15000);
 
     return () => clearTimeout(timeout);
   }, [game.id]);
@@ -115,12 +120,13 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     setIframeFailed(false);
   }, []);
 
-  // Enable audio on user click (required by browser autoplay policies)
+  // Enable audio + focus iframe on user tap
   const enableAudio = useCallback(() => {
-    setAudioEnabled(true);
     setShowAudioPrompt(false);
     // Focus the iframe so game receives keyboard input
-    iframeRef.current?.focus();
+    setTimeout(() => {
+      iframeRef.current?.focus();
+    }, 100);
   }, []);
 
   // Retry loading
@@ -135,10 +141,9 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         if (iframeRef.current) iframeRef.current.src = src;
       });
     }
-    // Reset timeout
     setTimeout(() => {
       if (!loadedRef.current) setIframeFailed(true);
-    }, 12000);
+    }, 15000);
   }, []);
 
   // Fullscreen toggle
@@ -156,7 +161,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     }
   }, []);
 
-  // Fullscreen change listener
+  // Fullscreen change listener (handles Esc key)
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handler);
@@ -214,21 +219,21 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
 
         {/* Error / timeout fallback */}
         {iframeFailed && !iframeLoaded && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-950 p-8 text-center">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-gray-950 p-6 text-center">
             <svg className="h-12 w-12 text-gray-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
             </svg>
             <p className="text-sm font-medium text-gray-300">
-              Game failed to load
+              Game is taking too long to load
             </p>
             <p className="text-xs text-gray-500 max-w-sm">
-              The game server may be slow or temporarily unavailable. Try
-              refreshing or opening the game directly.
+              The game server might be slow, or this game may not support iframe
+              embedding on this domain. Try the options below.
             </p>
-            <div className="mt-2 flex gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               <button
                 onClick={retryLoad}
-                className="rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white hover:bg-purple-500 transition-colors"
+                className="rounded-lg bg-purple-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-purple-500 transition-colors"
               >
                 Retry
               </button>
@@ -236,15 +241,51 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
                 href={game.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg bg-gray-800 px-4 py-2 text-xs font-medium text-gray-300 hover:bg-gray-700 transition-colors"
+                className="rounded-lg bg-gray-800 px-5 py-2.5 text-xs font-semibold text-gray-300 hover:bg-gray-700 transition-colors"
               >
-                Open Directly
+                Open Game Directly
               </a>
             </div>
+
+            {/* Show alternative games on error */}
+            {related.length > 0 && (
+              <div className="mt-4 w-full max-w-lg">
+                <p className="mb-2 text-xs font-medium text-gray-400">
+                  Try these instead:
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {related.slice(0, 3).map((r) => (
+                    <Link
+                      key={r.id}
+                      href={`/game/${r.id}`}
+                      className="group overflow-hidden rounded-lg border border-gray-800/50 bg-gray-900/60 transition-all hover:border-gray-600/50"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={r.thumb}
+                        alt={r.title}
+                        className="aspect-video w-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          const t = e.target as HTMLImageElement;
+                          if (!t.dataset.fb) {
+                            t.dataset.fb = "1";
+                            t.src = `https://picsum.photos/seed/${r.id}/240/135`;
+                          }
+                        }}
+                      />
+                      <p className="truncate px-2 py-1 text-[10px] font-medium text-gray-400 group-hover:text-white">
+                        {r.title}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Audio enable overlay — tap to play with sound */}
+        {/* Audio enable overlay — tap to play */}
         {iframeLoaded && showAudioPrompt && !iframeFailed && (
           <div
             className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm cursor-pointer animate-fade-in-up"
@@ -264,7 +305,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
                 Tap to Play with Sound
               </p>
               <p className="text-[11px] text-gray-400">
-                Click anywhere to enable game audio
+                Click anywhere to start the game
               </p>
             </div>
           </div>
@@ -277,14 +318,12 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
             data-game={game.id}
             src={game.url}
             title={`Play ${game.title}`}
-            className="h-full w-full"
-            allow="autoplay; fullscreen; gamepad; microphone"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            className="h-full w-full border-0"
+            allow="autoplay; fullscreen; gamepad; microphone; camera"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
             loading="lazy"
             onLoad={handleIframeLoad}
-            style={{
-              touchAction: "manipulation",
-            }}
+            style={{ touchAction: "manipulation" }}
           />
         </div>
 
@@ -292,7 +331,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         <div className="absolute bottom-3 right-3 z-20 flex gap-2">
           <button
             onClick={toggleFullscreen}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/60 text-gray-300 backdrop-blur-sm transition-all hover:bg-black/80 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/60 text-gray-300 backdrop-blur-sm transition-all hover:bg-black/80 hover:text-white sm:h-10 sm:w-10"
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           >
             {isFullscreen ? (

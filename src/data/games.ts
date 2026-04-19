@@ -1,18 +1,22 @@
 // ================================================================
-// GAME DATABASE — 25 Embeddable HTML5 Games via GameDistribution CDN
+// GAME DATABASE — 25 Embeddable HTML5 Games
 // ================================================================
 //
-// ALL URLs use GameDistribution's free iframe-safe CDN.
-// FORMAT: https://html5.gamedistribution.com/{GAME_HASH}/
-//
-// THUMBNAILS use GameDistribution's image CDN:
-// FORMAT: https://img.gamedistribution.com/{GAME_HASH}-512x384.jpeg
+// SOURCES:
+//   1. GameDistribution (embed wrapper — most reliable)
+//      FORMAT: https://embed.gamedistribution.com/?url=https://html5.gamedistribution.com/{HASH}/
+//   2. CrazyGames (older games that allow iframe)
+//      FORMAT: https://games.crazygames.com/en_US/{slug}/index.html
+//   3. PlayPager (simple HTML5 games, always work)
+//      FORMAT: https://playpager.com/embed/{slug}/index.html
 //
 // HOW TO ADD MORE GAMES:
-// 1. Go to https://gamedistribution.com/games
-// 2. Click any game -> copy the embed link
-// 3. Grab the hash from the iframe src URL
-// 4. Add a new entry below with that hash
+//   GameDistribution: Go to gamedistribution.com/games → click any game →
+//   copy the embed link → paste as url below
+//
+// IF A GAME DOESN'T LOAD:
+//   The GamePageClient has automatic error detection + retry + fallback.
+//   Replace the broken URL with a new one from any of the sources above.
 // ================================================================
 
 export type Category =
@@ -39,16 +43,18 @@ export const categories: Category[] = [
   "Endless",
 ];
 
-// Helper — GameDistribution embed URL builder
+// Helpers
 const gd = (hash: string) =>
   `https://html5.gamedistribution.com/${hash}/`;
 
-// Helper — GameDistribution thumbnail CDN
 const gdThumb = (hash: string) =>
   `https://img.gamedistribution.com/${hash}-512x384.jpeg`;
 
+const cgThumb = (slug: string) =>
+  `https://images.crazygames.com/games/${slug}/cover-1695813599784.png?auto=format%2Ccompress&q=45&cs=strip&ch=DPR&w=480`;
+
 // ──────────────────────────────────────────────────────────
-// 25 GAMES — GameDistribution CDN (iframe-safe, mobile-ready)
+// 25 GAMES — Multi-source for maximum reliability
 // ──────────────────────────────────────────────────────────
 
 export const games: Game[] = [
@@ -74,31 +80,31 @@ export const games: Game[] = [
       "A slithering io snake game with a paper theme. Eat others to grow bigger, choose awesome snakes, and dominate the leaderboard.",
   },
   {
-    id: "knight-arena-io",
-    title: "Knight Arena.io",
+    id: "basketball-stars",
+    title: "Basketball Stars",
     category: "Multiplayer",
-    thumb: gdThumb("9fcd52e69f0c4b9da545f4d5e8ad723b"),
-    url: gd("9fcd52e69f0c4b9da545f4d5e8ad723b"),
+    thumb: cgThumb("basketball-stars-2019"),
+    url: "https://games.crazygames.com/en_US/basketball-stars/index.html",
     description:
-      "Enter a medieval battle arena as a knight. Fight other players in real-time multiplayer combat, upgrade your gear, and dominate.",
+      "Play basketball 1v1 against real opponents! Show off your dribbling, shooting, and dunking skills to become the champion.",
   },
   {
-    id: "battleship-war",
-    title: "Battleship War Multiplayer",
+    id: "stickman-hook",
+    title: "Stickman Hook",
     category: "Multiplayer",
-    thumb: gdThumb("85dcb4270a524c31810cdeeeaf311bec"),
-    url: gd("85dcb4270a524c31810cdeeeaf311bec"),
+    thumb: cgThumb("stickman-hook"),
+    url: "https://games.crazygames.com/en_US/stickman-hook/index.html",
     description:
-      "The classic Battleship board game brought online. Place your fleet, guess enemy positions, and sink all their ships before they sink yours.",
+      "Swing from hook to hook like a spider. Time your grabs perfectly, build momentum, and race to the finish in this addictive physics game.",
   },
   {
-    id: "stickman-kombat",
-    title: "Stickman Kombat 2D",
+    id: "chess-online",
+    title: "Chess",
     category: "Multiplayer",
-    thumb: gdThumb("6d3928f393774157a7aed692f08ee011"),
-    url: gd("6d3928f393774157a7aed692f08ee011"),
+    thumb: "https://playpager.com/embed/chess/img/icon.png",
+    url: "https://playpager.com/embed/chess/index.html",
     description:
-      "Fast-paced stickman fighting game. Choose your fighter, master combos, and battle opponents in 2D arena combat.",
+      "The classic game of chess. Play against the computer AI with multiple difficulty levels. Sharpen your strategy and checkmate your opponent.",
   },
 
   // ═══════════════════════════════════════════
@@ -108,8 +114,8 @@ export const games: Game[] = [
     id: "moto-x3m",
     title: "Moto X3M",
     category: "Racing",
-    thumb: gdThumb("5b0abd4c0faa4f5eb190a9a16d5a1b4c"),
-    url: gd("5b0abd4c0faa4f5eb190a9a16d5a1b4c"),
+    thumb: cgThumb("moto-x3m"),
+    url: "https://games.crazygames.com/en_US/moto-x3m/index.html",
     description:
       "Extreme motorcycle obstacle course with 25 challenging levels. Time your flips perfectly, dodge deadly traps, and earn 3 stars on every level.",
   },
@@ -132,22 +138,22 @@ export const games: Game[] = [
       "Extreme 3D racing with impossible obstacles and challenging tracks. Push your car to the limit and overtake rivals at breakneck speed.",
   },
   {
-    id: "f1-racing",
-    title: "F1 Racing",
+    id: "snow-rider-3d",
+    title: "Snow Rider 3D",
     category: "Racing",
-    thumb: gdThumb("97f2eff444fd411aa5b5b73ce6d4926e"),
-    url: gd("97f2eff444fd411aa5b5b73ce6d4926e"),
+    thumb: "https://images.crazygames.com/snow-rider-3d/20231215082031/snow-rider-3d-cover?auto=format%2Ccompress&q=45&cs=strip&ch=DPR&w=480",
+    url: "https://games.mathpapers.org/snowrider3d/index.html",
     description:
-      "High-octane Formula 1 racing with different modes and tournaments. Race on professional circuits and compete for the championship.",
+      "Ride your sled down a snowy mountain dodging trees and obstacles. Collect gifts and see how far you can go in this thrilling winter ride.",
   },
   {
-    id: "drag-racing",
-    title: "Drag Racing",
+    id: "smash-karts",
+    title: "Smash Karts",
     category: "Racing",
-    thumb: gdThumb("ad8fa388ce234b03b598c347e4fac8fa"),
-    url: gd("ad8fa388ce234b03b598c347e4fac8fa"),
+    thumb: cgThumb("smash-karts"),
+    url: "https://games.crazygames.com/en_US/smash-karts/index.html",
     description:
-      "Beat rivals in straight-line speed battles. Buy cars, upgrade engines, and fine-tune your ride to become the fastest drag racer.",
+      "3D multiplayer kart racing with weapons and power-ups. Battle other players in arenas, collect weapon crates, and blast your way to victory.",
   },
 
   // ═══════════════════════════════════════════
@@ -172,13 +178,13 @@ export const games: Game[] = [
       "Defend your territory and destroy enemy tanks. Collect power-ups including shields, missiles, and cannons to dominate the battlefield.",
   },
   {
-    id: "army-combat",
-    title: "Army Combat",
+    id: "bullet-force",
+    title: "Bullet Force",
     category: "Shooting",
-    thumb: gdThumb("8f48d982f0394ff4acf7140e7d02bffa"),
-    url: gd("8f48d982f0394ff4acf7140e7d02bffa"),
+    thumb: cgThumb("bullet-force-multiplayer"),
+    url: "https://games.crazygames.com/en_US/bullet-force-multiplayer/index.html",
     description:
-      "Tactical army shooter with 2 game modes and multiple weapons. Engage in intense combat scenarios with polished graphics and smooth controls.",
+      "Online multiplayer FPS with fast-paced action. Battle on tactical maps using assault rifles, shotguns, snipers, and more.",
   },
   {
     id: "stickman-sniper-3",
@@ -190,13 +196,13 @@ export const games: Game[] = [
       "Take on sniper missions and gun down targets across multiple levels. Line up your shots carefully and complete each mission for max stars.",
   },
   {
-    id: "bubble-shooter-extreme",
-    title: "Bubble Shooter Extreme",
+    id: "getaway-shootout",
+    title: "Getaway Shootout",
     category: "Shooting",
-    thumb: gdThumb("c3f0f0c6731a4d908d978fb7906a0b17"),
-    url: gd("c3f0f0c6731a4d908d978fb7906a0b17"),
+    thumb: cgThumb("getaway-shootout"),
+    url: "https://games.crazygames.com/en_US/getaway-shootout/index.html",
     description:
-      "HD bubble-shooting action with precision aiming. Match 3 or more same-colored bubbles to pop them and clear all levels.",
+      "Race to the getaway vehicle in this hilarious physics-based shootout. Grab weapons, use power-ups, and outsmart your opponents.",
   },
 
   // ═══════════════════════════════════════════
@@ -221,6 +227,24 @@ export const games: Game[] = [
       "A Sudoku meets Tetris puzzle game. Drag jewel-colored blocks onto the grid and complete full lines to score. Simple to learn, hard to master.",
   },
   {
+    id: "sudoku-classic",
+    title: "Sudoku",
+    category: "Puzzle",
+    thumb: "https://playpager.com/embed/sudoku/img/icon.png",
+    url: "https://playpager.com/embed/sudoku/index.html",
+    description:
+      "The classic number puzzle. Fill in the 9x9 grid so that every row, column, and 3x3 box contains the digits 1-9. Multiple difficulty levels.",
+  },
+  {
+    id: "checkers-classic",
+    title: "Checkers",
+    category: "Puzzle",
+    thumb: "https://playpager.com/embed/checkers/img/icon.png",
+    url: "https://playpager.com/embed/checkers/index.html",
+    description:
+      "Play the classic board game of checkers against the computer. Jump and capture opponent pieces to win. Simple rules, deep strategy.",
+  },
+  {
     id: "merge-fruit",
     title: "Merge Fruit",
     category: "Puzzle",
@@ -229,45 +253,27 @@ export const games: Game[] = [
     description:
       "Suika-style merging puzzle. Drop fruits and merge matching ones into higher-level fruit. A worldwide viral hit — how high can you score?",
   },
-  {
-    id: "bubble-shooter-hd",
-    title: "Bubble Shooter HD",
-    category: "Puzzle",
-    thumb: gdThumb("79a7db22af5f420eb9d56e28fffca87b"),
-    url: gd("79a7db22af5f420eb9d56e28fffca87b"),
-    description:
-      "Precision bubble puzzle with HD graphics. Aim, shoot, and match 3 or more bubbles of the same color to clear hundreds of levels.",
-  },
-  {
-    id: "bubble-hit",
-    title: "Bubble Hit",
-    category: "Puzzle",
-    thumb: gdThumb("502af82350a44582b6e51d467285a8c0"),
-    url: gd("502af82350a44582b6e51d467285a8c0"),
-    description:
-      "Classic bubble-popping puzzle with colorful visuals. Create groups of 3+ matching bubbles and clear the screen before they reach the bottom.",
-  },
 
   // ═══════════════════════════════════════════
   // ENDLESS / RUNNER (5)
   // ═══════════════════════════════════════════
   {
-    id: "eg-subway-surfer",
-    title: "EG Subway Surfer",
+    id: "slope",
+    title: "Slope",
     category: "Endless",
-    thumb: gdThumb("8baa45aabd504c1ab7a6c4ee9b1a336f"),
-    url: gd("8baa45aabd504c1ab7a6c4ee9b1a336f"),
+    thumb: cgThumb("slope"),
+    url: "https://games.crazygames.com/en_US/slope/index.html",
     description:
-      "Endless subway runner. Dash through tracks, dodge trains, collect coins, and see how far you can go in this thrilling runner.",
+      "Roll a ball down a steep slope at breakneck speed. Dodge obstacles, avoid red walls, and survive as long as possible. Incredibly addictive.",
   },
   {
-    id: "endless-runner-3d",
-    title: "Endless Runner 3D",
+    id: "tunnel-rush",
+    title: "Tunnel Rush",
     category: "Endless",
-    thumb: gdThumb("06be3a6f9a984ac3b83db72147f5cbc4"),
-    url: gd("06be3a6f9a984ac3b83db72147f5cbc4"),
+    thumb: gdThumb("59bbba689dce41ddb2a4fbcbeb855cee"),
+    url: gd("59bbba689dce41ddb2a4fbcbeb855cee"),
     description:
-      "3D endless running filled with fun obstacles and power-ups. Swipe to turn, jump, and slide past deadly hazards in this fast-paced runner.",
+      "Race through a neon-lit 3D tunnel at blazing speed. Dodge obstacles, walls, and barriers with quick reflexes. How far can you survive?",
   },
   {
     id: "helix-stack-3d",
@@ -288,13 +294,13 @@ export const games: Game[] = [
       "Exhilarating 4D platformer with neon geometry aesthetics. Jump and dash through rhythm-based levels with increasing speed and difficulty.",
   },
   {
-    id: "tunnel-rush",
-    title: "Tunnel Rush",
+    id: "eg-subway-surfer",
+    title: "EG Subway Surfer",
     category: "Endless",
-    thumb: gdThumb("59bbba689dce41ddb2a4fbcbeb855cee"),
-    url: gd("59bbba689dce41ddb2a4fbcbeb855cee"),
+    thumb: gdThumb("8baa45aabd504c1ab7a6c4ee9b1a336f"),
+    url: gd("8baa45aabd504c1ab7a6c4ee9b1a336f"),
     description:
-      "Race through a neon-lit 3D tunnel at blazing speed. Dodge obstacles, walls, and barriers with quick reflexes. How far can you survive?",
+      "Endless subway runner. Dash through tracks, dodge trains, collect coins, and see how far you can go in this thrilling runner.",
   },
 ];
 
