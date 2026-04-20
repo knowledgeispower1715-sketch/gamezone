@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | GameZone",
   },
   description:
-    "Play free online games instantly in your browser. No downloads needed. Action, Racing, Puzzle, Shooting, Multiplayer and Endless Runner games — all free to play!",
+    "Play free online games instantly in your browser. No downloads needed. Puzzle, Arcade, Racing, Shooter and Casual games — all free to play!",
   keywords: [
     "play games online free",
     "browser games no download",
@@ -67,11 +67,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        {/* Preconnect to game CDN for faster loading */}
-        <link rel="preconnect" href="https://html5.gamedistribution.com" />
-        <link rel="preconnect" href="https://img.gamedistribution.com" />
-        <link rel="dns-prefetch" href="https://html5.gamedistribution.com" />
-        <link rel="dns-prefetch" href="https://img.gamedistribution.com" />
+        {/* Preconnect to game hosting domains for faster loading */}
+        <link rel="preconnect" href="https://playpager.com" />
+        <link rel="dns-prefetch" href="https://playpager.com" />
+        <link rel="dns-prefetch" href="https://picsum.photos" />
 
         {/*
           GOOGLE ADSENSE — Paste your AdSense script here:

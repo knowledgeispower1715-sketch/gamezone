@@ -74,7 +74,7 @@ export default function HomePage() {
     }
     // Default trending = spread across categories
     const picked: typeof games = [];
-    const cats = ["Multiplayer", "Racing", "Shooting", "Puzzle", "Endless"];
+    const cats = ["Puzzle", "Arcade", "Racing", "Shooter", "Casual"];
     for (const cat of cats) {
       const g = games.find((g) => g.category === cat);
       if (g) picked.push(g);
@@ -109,9 +109,9 @@ export default function HomePage() {
             Online
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-gray-400 sm:text-lg">
-            Jump into multiplayer battles, race at full speed, solve brain
-            teasers, or survive endless runs — all instant, all free, all in
-            your browser.
+            Solve puzzles, blast through arcade classics, race at full speed,
+            or chill with casual games — all instant, all free, all in your
+            browser.
           </p>
           <div className="mt-8 flex justify-center">
             <a

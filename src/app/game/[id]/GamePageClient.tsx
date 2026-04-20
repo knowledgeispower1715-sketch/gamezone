@@ -11,11 +11,11 @@ import { useRecentlyPlayed } from "@/hooks/useRecentlyPlayed";
 import { useMostPlayed } from "@/hooks/useMostPlayed";
 
 const badgeStyle: Record<string, string> = {
-  Multiplayer: "bg-blue-500/15 text-blue-300 border-blue-500/30",
-  Racing: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-  Shooting: "bg-red-500/15 text-red-300 border-red-500/30",
   Puzzle: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
-  Endless: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+  Arcade: "bg-blue-500/15 text-blue-300 border-blue-500/30",
+  Racing: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+  Shooter: "bg-red-500/15 text-red-300 border-red-500/30",
+  Casual: "bg-amber-500/15 text-amber-300 border-amber-500/30",
 };
 
 interface Props {
@@ -98,7 +98,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     return () => clearTimeout(t);
   }, [game.id, addRecent, increment]);
 
-  // Iframe load timeout — 15s then show fallback
+  // Iframe load timeout — 20s then show fallback
   useEffect(() => {
     loadedRef.current = false;
     setIframeLoaded(false);
@@ -109,7 +109,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
       if (!loadedRef.current) {
         setIframeFailed(true);
       }
-    }, 15000);
+    }, 20000);
 
     return () => clearTimeout(timeout);
   }, [game.id]);
@@ -123,7 +123,6 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
   // Enable audio + focus iframe on user tap
   const enableAudio = useCallback(() => {
     setShowAudioPrompt(false);
-    // Focus the iframe so game receives keyboard input
     setTimeout(() => {
       iframeRef.current?.focus();
     }, 100);
@@ -143,7 +142,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     }
     setTimeout(() => {
       if (!loadedRef.current) setIframeFailed(true);
-    }, 15000);
+    }, 20000);
   }, []);
 
   // Fullscreen toggle
@@ -217,41 +216,31 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           </div>
         )}
 
-        {/* Error / timeout fallback */}
+        {/* Error / timeout fallback — NO external links */}
         {iframeFailed && !iframeLoaded && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-gray-950 p-6 text-center">
             <svg className="h-12 w-12 text-gray-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
             </svg>
             <p className="text-sm font-medium text-gray-300">
-              Game is taking too long to load
+              Game failed to load
             </p>
             <p className="text-xs text-gray-500 max-w-sm">
-              The game server might be slow, or this game may not support iframe
-              embedding on this domain. Try the options below.
+              The game server might be slow or temporarily unavailable.
+              Try again or pick another game below.
             </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              <button
-                onClick={retryLoad}
-                className="rounded-lg bg-purple-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-purple-500 transition-colors"
-              >
-                Retry
-              </button>
-              <a
-                href={game.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg bg-gray-800 px-5 py-2.5 text-xs font-semibold text-gray-300 hover:bg-gray-700 transition-colors"
-              >
-                Open Game Directly
-              </a>
-            </div>
+            <button
+              onClick={retryLoad}
+              className="rounded-lg bg-purple-600 px-6 py-2.5 text-xs font-semibold text-white hover:bg-purple-500 transition-colors"
+            >
+              Retry
+            </button>
 
-            {/* Show alternative games on error */}
+            {/* Show alternative games on error — NO external links */}
             {related.length > 0 && (
               <div className="mt-4 w-full max-w-lg">
                 <p className="mb-2 text-xs font-medium text-gray-400">
-                  Try these instead:
+                  Try another game:
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   {related.slice(0, 3).map((r) => (
@@ -311,7 +300,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           </div>
         )}
 
-        {/* Responsive iframe */}
+        {/* Responsive iframe — FIXED permissions */}
         <div className="aspect-video w-full">
           <iframe
             ref={iframeRef}
@@ -319,8 +308,8 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
             src={game.url}
             title={`Play ${game.title}`}
             className="h-full w-full border-0"
-            allow="autoplay; fullscreen; gamepad; microphone; camera"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
+            allow="fullscreen; autoplay; gamepad"
+            sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms"
             loading="lazy"
             onLoad={handleIframeLoad}
             style={{ touchAction: "manipulation" }}

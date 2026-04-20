@@ -23,11 +23,11 @@ export default function Footer() {
               Categories
             </h4>
             <div className="space-y-1.5 text-sm text-gray-500">
-              <Link href="/?category=Multiplayer" className="block hover:text-white transition-colors">Multiplayer Games</Link>
-              <Link href="/?category=Racing" className="block hover:text-white transition-colors">Racing Games</Link>
-              <Link href="/?category=Shooting" className="block hover:text-white transition-colors">Shooting Games</Link>
               <Link href="/?category=Puzzle" className="block hover:text-white transition-colors">Puzzle Games</Link>
-              <Link href="/?category=Endless" className="block hover:text-white transition-colors">Endless Runner Games</Link>
+              <Link href="/?category=Arcade" className="block hover:text-white transition-colors">Arcade Games</Link>
+              <Link href="/?category=Racing" className="block hover:text-white transition-colors">Racing Games</Link>
+              <Link href="/?category=Shooter" className="block hover:text-white transition-colors">Shooter Games</Link>
+              <Link href="/?category=Casual" className="block hover:text-white transition-colors">Casual Games</Link>
             </div>
           </div>
 
