@@ -34,7 +34,7 @@
  */
 
 interface AdBannerProps {
-  slot: "top-banner" | "below-game" | "grid-mid";
+  slot: "top-banner" | "below-game" | "grid-mid" | "mid-page";
   className?: string;
 }
 
@@ -56,6 +56,11 @@ const config: Record<
     label: "Rectangle Ad (336x280)",
     height: "h-[200px] sm:h-[280px]",
     maxWidth: "max-w-sm mx-auto",
+  },
+  "mid-page": {
+    label: "Mid-Page Ad (728x90)",
+    height: "h-[60px] sm:h-[90px]",
+    maxWidth: "max-w-full",
   },
 };
 

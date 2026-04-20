@@ -4,18 +4,18 @@ import type { Category } from "@/data/games";
 
 const tabs: Array<{ label: string; value: Category | "All"; icon: string }> = [
   { label: "All Games", value: "All", icon: "🎮" },
-  { label: "Puzzle", value: "Puzzle", icon: "🧩" },
-  { label: "Arcade", value: "Arcade", icon: "👾" },
+  { label: "Action", value: "Action", icon: "⚡" },
   { label: "Racing", value: "Racing", icon: "🏎️" },
+  { label: "Puzzle", value: "Puzzle", icon: "🧩" },
   { label: "Shooter", value: "Shooter", icon: "🎯" },
   { label: "Casual", value: "Casual", icon: "🎲" },
 ];
 
 const activeColors: Record<string, string> = {
   All: "from-purple-600 to-violet-600 shadow-purple-500/25",
-  Puzzle: "from-cyan-600 to-teal-600 shadow-cyan-500/25",
-  Arcade: "from-blue-600 to-indigo-600 shadow-blue-500/25",
+  Action: "from-blue-600 to-indigo-600 shadow-blue-500/25",
   Racing: "from-emerald-600 to-green-600 shadow-emerald-500/25",
+  Puzzle: "from-cyan-600 to-teal-600 shadow-cyan-500/25",
   Shooter: "from-red-600 to-rose-600 shadow-red-500/25",
   Casual: "from-amber-600 to-orange-600 shadow-amber-500/25",
 };

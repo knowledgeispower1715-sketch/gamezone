@@ -11,9 +11,9 @@ import { useRecentlyPlayed } from "@/hooks/useRecentlyPlayed";
 import { useMostPlayed } from "@/hooks/useMostPlayed";
 
 const badgeStyle: Record<string, string> = {
-  Puzzle: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
-  Arcade: "bg-blue-500/15 text-blue-300 border-blue-500/30",
+  Action: "bg-blue-500/15 text-blue-300 border-blue-500/30",
   Racing: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+  Puzzle: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
   Shooter: "bg-red-500/15 text-red-300 border-red-500/30",
   Casual: "bg-amber-500/15 text-amber-300 border-amber-500/30",
 };
@@ -83,6 +83,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
   const [iframeFailed, setIframeFailed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showAudioPrompt, setShowAudioPrompt] = useState(true);
+  const [showIframe, setShowIframe] = useState(false);
   const loadedRef = useRef(false);
 
   // Track play + auto-scroll
@@ -98,18 +99,39 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     return () => clearTimeout(t);
   }, [game.id, addRecent, increment]);
 
-  // Iframe load timeout — 20s then show fallback
+  // Lazy load: only mount iframe when game area is near viewport
+  useEffect(() => {
+    const el = gameAreaRef.current;
+    if (!el) {
+      setShowIframe(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowIframe(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [game.id]);
+
+  // Iframe load timeout — 25s then show fallback
   useEffect(() => {
     loadedRef.current = false;
     setIframeLoaded(false);
     setIframeFailed(false);
     setShowAudioPrompt(true);
+    setShowIframe(false);
 
     const timeout = setTimeout(() => {
       if (!loadedRef.current) {
         setIframeFailed(true);
       }
-    }, 20000);
+    }, 25000);
 
     return () => clearTimeout(timeout);
   }, [game.id]);
@@ -118,6 +140,12 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     loadedRef.current = true;
     setIframeLoaded(true);
     setIframeFailed(false);
+  }, []);
+
+  // Handle iframe error
+  const handleIframeError = useCallback(() => {
+    setIframeFailed(true);
+    setIframeLoaded(false);
   }, []);
 
   // Enable audio + focus iframe on user tap
@@ -142,7 +170,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     }
     setTimeout(() => {
       if (!loadedRef.current) setIframeFailed(true);
-    }, 20000);
+    }, 25000);
   }, []);
 
   // Fullscreen toggle
@@ -169,7 +197,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      {/* ── Nav bar ── */}
+      {/* Nav bar */}
       <div className="mb-4 flex items-center gap-3">
         <Link
           href="/"
@@ -193,12 +221,12 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         />
       </div>
 
-      {/* ── Game title ── */}
+      {/* Game title */}
       <h1 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
         {game.title}
       </h1>
 
-      {/* ── GAME IFRAME CONTAINER ── */}
+      {/* GAME IFRAME CONTAINER */}
       <div
         ref={gameAreaRef}
         className={`relative overflow-hidden rounded-2xl border border-gray-800/60 bg-black shadow-2xl shadow-purple-500/5 scroll-mt-4 ${isFullscreen ? "rounded-none" : ""}`}
@@ -216,7 +244,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           </div>
         )}
 
-        {/* Error / timeout fallback — NO external links */}
+        {/* Error / timeout fallback */}
         {iframeFailed && !iframeLoaded && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-gray-950 p-6 text-center">
             <svg className="h-12 w-12 text-gray-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -236,7 +264,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
               Retry
             </button>
 
-            {/* Show alternative games on error — NO external links */}
+            {/* Alternative games on error */}
             {related.length > 0 && (
               <div className="mt-4 w-full max-w-lg">
                 <p className="mb-2 text-xs font-medium text-gray-400">
@@ -300,20 +328,27 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           </div>
         )}
 
-        {/* Responsive iframe — FIXED permissions */}
+        {/* Responsive iframe with proper permissions */}
         <div className="aspect-video w-full">
-          <iframe
-            ref={iframeRef}
-            data-game={game.id}
-            src={game.url}
-            title={`Play ${game.title}`}
-            className="h-full w-full border-0"
-            allow="fullscreen; autoplay; gamepad"
-            sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms"
-            loading="lazy"
-            onLoad={handleIframeLoad}
-            style={{ touchAction: "manipulation" }}
-          />
+          {showIframe && (
+            <iframe
+              ref={iframeRef}
+              data-game={game.id}
+              src={game.url}
+              title={`Play ${game.title}`}
+              className="h-full w-full border-0"
+              allow="fullscreen; autoplay; gamepad; accelerometer; gyroscope"
+              sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-popups"
+              loading="lazy"
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
+              referrerPolicy="no-referrer"
+              style={{
+                touchAction: "manipulation",
+                colorScheme: "normal",
+              }}
+            />
+          )}
         </div>
 
         {/* Bottom controls */}
@@ -336,10 +371,10 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         </div>
       </div>
 
-      {/* ── Below-game ad ── */}
+      {/* Below-game ad */}
       <AdBanner slot="below-game" className="mt-4" />
 
-      {/* ── Game info + Leaderboard ── */}
+      {/* Game info + Leaderboard */}
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="rounded-xl border border-gray-800/60 bg-gray-900/40 p-4">
           <h2 className="mb-2 text-sm font-semibold text-gray-200">
@@ -365,7 +400,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         <Leaderboard gameId={game.id} gameTitle={game.title} />
       </div>
 
-      {/* ── Related games (same category) ── */}
+      {/* Related games (same category) */}
       {related.length > 0 && (
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-semibold text-gray-200">
@@ -379,7 +414,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         </section>
       )}
 
-      {/* ── You May Also Like (different categories) ── */}
+      {/* You May Also Like (different categories) */}
       {alsoLike.length > 0 && (
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-semibold text-gray-200">

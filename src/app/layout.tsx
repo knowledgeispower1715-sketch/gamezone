@@ -27,23 +27,23 @@ export const metadata: Metadata = {
     template: "%s | GameZone",
   },
   description:
-    "Play free online games instantly in your browser. No downloads needed. Puzzle, Arcade, Racing, Shooter and Casual games — all free to play!",
+    "Play 40+ free online games instantly in your browser. No downloads needed. Action, Racing, Puzzle, Shooter and Casual games — all free to play!",
   keywords: [
     "play games online free",
     "browser games no download",
     "free online games",
     "HTML5 games",
-    "multiplayer browser games",
+    "action games online",
     "racing games online",
     "shooting games free",
     "puzzle games online",
-    "io games",
-    "endless runner games",
+    "casual games free",
+    "no download games",
   ],
   openGraph: {
     title: "GameZone — Play Free Online Games",
     description:
-      "Play 25+ free browser games instantly. No download required.",
+      "Play 40+ free browser games instantly. No download required.",
     type: "website",
     siteName: "GameZone",
   },
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "GameZone — Play Free Online Games",
     description:
-      "Play 25+ free browser games instantly. No download required.",
+      "Play 40+ free browser games instantly. No download required.",
   },
   robots: {
     index: true,
@@ -70,6 +70,8 @@ export default function RootLayout({
         {/* Preconnect to game hosting domains for faster loading */}
         <link rel="preconnect" href="https://playpager.com" />
         <link rel="dns-prefetch" href="https://playpager.com" />
+        <link rel="dns-prefetch" href="https://html5.gamedistribution.com" />
+        <link rel="dns-prefetch" href="https://itch.io" />
         <link rel="dns-prefetch" href="https://picsum.photos" />
 
         {/*

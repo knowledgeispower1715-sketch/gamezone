@@ -13,17 +13,17 @@ interface GameCardProps {
 }
 
 const accentGradient: Record<string, string> = {
-  Puzzle: "from-cyan-500/60 to-teal-600/60",
-  Arcade: "from-blue-500/60 to-indigo-600/60",
+  Action: "from-blue-500/60 to-indigo-600/60",
   Racing: "from-emerald-500/60 to-green-600/60",
+  Puzzle: "from-cyan-500/60 to-teal-600/60",
   Shooter: "from-red-500/60 to-rose-600/60",
   Casual: "from-amber-500/60 to-orange-600/60",
 };
 
 const badgeStyle: Record<string, string> = {
-  Puzzle: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
-  Arcade: "bg-blue-500/15 text-blue-300 border-blue-500/30",
+  Action: "bg-blue-500/15 text-blue-300 border-blue-500/30",
   Racing: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+  Puzzle: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
   Shooter: "bg-red-500/15 text-red-300 border-red-500/30",
   Casual: "bg-amber-500/15 text-amber-300 border-amber-500/30",
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { games, type Category } from "@/data/games";
+import { games, getPopularGames, getNewGames, getRecommendedGames, type Category } from "@/data/games";
 import GameCard from "@/components/GameCard";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -11,8 +11,8 @@ import { useRecentlyPlayed } from "@/hooks/useRecentlyPlayed";
 import { useMostPlayed } from "@/hooks/useMostPlayed";
 import Link from "next/link";
 
-const INITIAL_SHOW = 10;
-const LOAD_MORE_COUNT = 10;
+const INITIAL_SHOW = 12;
+const LOAD_MORE_COUNT = 12;
 
 export default function HomePage() {
   const [search, setSearch] = useState("");
@@ -74,7 +74,7 @@ export default function HomePage() {
     }
     // Default trending = spread across categories
     const picked: typeof games = [];
-    const cats = ["Puzzle", "Arcade", "Racing", "Shooter", "Casual"];
+    const cats: Category[] = ["Action", "Racing", "Puzzle", "Shooter", "Casual"];
     for (const cat of cats) {
       const g = games.find((g) => g.category === cat);
       if (g) picked.push(g);
@@ -82,6 +82,11 @@ export default function HomePage() {
     picked.push(games[Math.floor(games.length / 2)]);
     return picked.slice(0, 6);
   }, [topIds]);
+
+  // Tag-based sections
+  const popularGames = useMemo(() => getPopularGames().slice(0, 8), []);
+  const newGames = useMemo(() => getNewGames().slice(0, 8), []);
+  const recommendedGames = useMemo(() => getRecommendedGames().slice(0, 8), []);
 
   // Reset showCount when filter changes
   const handleCategoryChange = (c: Category | "All") => {
@@ -109,9 +114,9 @@ export default function HomePage() {
             Online
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-gray-400 sm:text-lg">
-            Solve puzzles, blast through arcade classics, race at full speed,
-            or chill with casual games — all instant, all free, all in your
-            browser.
+            Action-packed adventures, high-speed races, brain-teasing puzzles,
+            intense shooters, and relaxing casual games — all instant, all free,
+            all in your browser.
           </p>
           <div className="mt-8 flex justify-center">
             <a
@@ -203,6 +208,75 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── POPULAR GAMES ── */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-lg font-bold text-gray-200">
+          ⭐ Popular Games
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {popularGames.map((game) => (
+            <GameCard
+              key={game.id}
+              game={game}
+              isFav={isFavorite(game.id)}
+              onToggleFav={() => toggleFavorite(game.id)}
+              playCount={getCount(game.id)}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* ── RECOMMENDED ── */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-lg font-bold text-gray-200">
+          👍 Recommended For You
+        </h2>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {recommendedGames.map((game) => (
+            <Link key={game.id} href={`/game/${game.id}`} className="group flex-shrink-0">
+              <div className="w-44 overflow-hidden rounded-xl border border-gray-800/50 bg-gray-900/40 transition-all hover:border-gray-600/50 hover:-translate-y-0.5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={game.thumb}
+                  alt={game.title}
+                  className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="px-2 py-1.5">
+                  <p className="truncate text-xs font-medium text-gray-300 group-hover:text-white">
+                    {game.title}
+                  </p>
+                  <p className="text-[10px] text-gray-500">{game.category}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ── NEW GAMES ── */}
+      <section className="mb-10">
+        <div className="mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-gray-200">
+            🆕 New Games
+          </h2>
+          <span className="rounded-full bg-green-500/15 px-2 py-0.5 text-[10px] font-semibold text-green-400 border border-green-500/30">
+            FRESH
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {newGames.map((game) => (
+            <GameCard
+              key={game.id}
+              game={game}
+              isFav={isFavorite(game.id)}
+              onToggleFav={() => toggleFavorite(game.id)}
+              playCount={getCount(game.id)}
+            />
+          ))}
+        </div>
+      </section>
+
       {/* ── RECENTLY PLAYED ── */}
       {recentGames.length > 0 && (
         <section className="mb-10 animate-fade-in-up">
@@ -256,6 +330,9 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* ── MID-PAGE AD ── */}
+      <AdBanner slot="mid-page" className="mb-8" />
+
       {/* ── GAME BROWSER ── */}
       <section id="games">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -290,8 +367,8 @@ export default function HomePage() {
                     onToggleFav={() => toggleFavorite(game.id)}
                     playCount={getCount(game.id)}
                   />
-                  {/* Grid ad after 10th visible card */}
-                  {i === 9 && filtered.length > 10 && (
+                  {/* Grid ad after 12th visible card */}
+                  {i === 11 && filtered.length > 12 && (
                     <div className="col-span-full mt-4 mb-4">
                       <AdBanner slot="grid-mid" />
                     </div>
