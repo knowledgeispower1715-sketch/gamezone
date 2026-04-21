@@ -6,36 +6,32 @@ import { useDevice } from "@/hooks/useDevice";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useRecentlyPlayed } from "@/hooks/useRecentlyPlayed";
 import { useMostPlayed } from "@/hooks/useMostPlayed";
-import FavoriteButton from "./FavoriteButton";
 
-interface InlineGamePlayerProps {
+interface Props {
   game: Game;
   onClose: () => void;
 }
 
-export default function InlineGamePlayer({
-  game,
-  onClose,
-}: InlineGamePlayerProps) {
+export default function InlineGamePlayer({ game, onClose }: Props) {
   const { isMobile } = useDevice();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { addRecent } = useRecentlyPlayed();
   const { increment } = useMostPlayed();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFs, setIsFs] = useState(false);
   const loadedRef = useRef(false);
 
-  /* ── Track play on mount ── */
+  // Track play
   useEffect(() => {
     addRecent(game.id);
     increment(game.id);
   }, [game.id, addRecent, increment]);
 
-  /* ── Lock body scroll when player is open ── */
+  // Lock body scroll
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -44,197 +40,157 @@ export default function InlineGamePlayer({
     };
   }, []);
 
-  /* ── Close on Escape key ── */
+  // ESC to close (only if not fullscreen)
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !isFullscreen) onClose();
+    const h = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !document.fullscreenElement) onClose();
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose, isFullscreen]);
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
 
-  /* ── 25s load timeout ── */
+  // Load timeout — 30s
   useEffect(() => {
     loadedRef.current = false;
     setLoaded(false);
     setFailed(false);
-    const timeout = setTimeout(() => {
+    const t = setTimeout(() => {
       if (!loadedRef.current) setFailed(true);
-    }, 25_000);
-    return () => clearTimeout(timeout);
+    }, 30_000);
+    return () => clearTimeout(t);
   }, [game.id]);
 
-  const handleLoad = useCallback(() => {
+  const onLoad = useCallback(() => {
     loadedRef.current = true;
     setLoaded(true);
     setFailed(false);
-    setTimeout(() => iframeRef.current?.focus(), 100);
+    // Focus iframe so game can receive keyboard input
+    setTimeout(() => iframeRef.current?.focus(), 150);
   }, []);
 
-  const handleError = useCallback(() => {
+  const onError = useCallback(() => {
     setFailed(true);
     setLoaded(false);
   }, []);
 
-  const retryLoad = useCallback(() => {
+  const retry = useCallback(() => {
     loadedRef.current = false;
     setFailed(false);
     setLoaded(false);
     if (iframeRef.current) {
-      const src = iframeRef.current.src;
+      const s = iframeRef.current.src;
       iframeRef.current.src = "";
       requestAnimationFrame(() => {
-        if (iframeRef.current) iframeRef.current.src = src;
+        if (iframeRef.current) iframeRef.current.src = s;
       });
     }
     setTimeout(() => {
       if (!loadedRef.current) setFailed(true);
-    }, 25_000);
+    }, 30_000);
   }, []);
 
-  /* ── Fullscreen ── */
-  const toggleFullscreen = useCallback(() => {
-    const el = containerRef.current;
+  // Fullscreen
+  const toggleFs = useCallback(() => {
+    const el = wrapRef.current;
     if (!el) return;
     if (!document.fullscreenElement) {
-      el.requestFullscreen()
-        .then(() => setIsFullscreen(true))
-        .catch(() => {});
+      el.requestFullscreen().then(() => setIsFs(true)).catch(() => {});
     } else {
-      document.exitFullscreen()
-        .then(() => setIsFullscreen(false))
-        .catch(() => {});
+      document.exitFullscreen().then(() => setIsFs(false)).catch(() => {});
     }
   }, []);
 
   useEffect(() => {
-    const handler = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener("fullscreenchange", handler);
-    return () => document.removeEventListener("fullscreenchange", handler);
+    const h = () => setIsFs(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", h);
+    return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
-  const platformBadge: Record<string, string> = {
-    mobile: "bg-green-500/15 text-green-400 border-green-500/25",
-    desktop: "bg-sky-500/15 text-sky-400 border-sky-500/25",
-    both: "bg-purple-500/15 text-purple-400 border-purple-500/25",
-  };
-  const platformLabel: Record<string, string> = {
-    mobile: "Mobile",
-    desktop: "PC",
-    both: "All Devices",
-  };
+  const fav = isFavorite(game.id);
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0a0a0f] animate-fade-in">
+    <div className="fixed inset-0 z-[100] flex flex-col" style={{ background: "#0a0a10" }}>
       {/* ── Top bar ── */}
-      <div className="flex h-12 sm:h-14 shrink-0 items-center gap-2 sm:gap-3 border-b border-white/5 bg-[#0d0d14] px-3 sm:px-5">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-white/5 hover:text-white active:scale-95"
-          aria-label="Close game"
-        >
+      <div className="flex h-11 sm:h-12 shrink-0 items-center gap-2 px-2 sm:px-4" style={{ background: "#0e0e16", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        {/* Back */}
+        <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:text-white hover:bg-white/5 transition-colors" aria-label="Close">
           <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
           </svg>
         </button>
 
-        {/* Game title */}
-        <h2 className="flex-1 truncate text-sm sm:text-base font-semibold text-white">
-          {game.title}
-        </h2>
+        {/* Title */}
+        <h2 className="flex-1 truncate text-xs sm:text-sm font-semibold text-white">{game.title}</h2>
 
-        {/* Badges */}
-        <span className={`hidden sm:inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium ${platformBadge[game.platform]}`}>
-          {platformLabel[game.platform]}
+        {/* Platform tag */}
+        <span className="hidden sm:block text-[10px] text-gray-500 font-medium">
+          {game.platform === "mobile" ? "Mobile" : game.platform === "desktop" ? "PC" : "All Devices"}
         </span>
 
-        {/* Favorite */}
-        <FavoriteButton
-          isFav={isFavorite(game.id)}
-          onToggle={() => toggleFavorite(game.id)}
-          size="md"
-        />
+        {/* Fav */}
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleFavorite(game.id); }}
+          className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${fav ? "text-red-400 bg-red-500/10" : "text-gray-500 hover:text-red-400 hover:bg-white/5"}`}
+          aria-label={fav ? "Unfavorite" : "Favorite"}
+        >
+          <svg className="h-4 w-4" fill={fav ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+          </svg>
+        </button>
 
         {/* Fullscreen */}
-        <button
-          onClick={toggleFullscreen}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-white/5 hover:text-white active:scale-95"
-          title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-        >
-          {isFullscreen ? (
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        <button onClick={toggleFs} className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:text-white hover:bg-white/5 transition-colors" aria-label="Fullscreen">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            {isFs ? (
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25" />
-            </svg>
-          ) : (
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            ) : (
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-            </svg>
-          )}
+            )}
+          </svg>
         </button>
       </div>
 
-      {/* ── Game iframe area ── */}
-      <div ref={containerRef} className="relative flex-1 min-h-0 bg-black">
-        {/* Loading state */}
+      {/* ── Game area ── */}
+      <div ref={wrapRef} className="relative flex-1 min-h-0 bg-black">
+        {/* Loading */}
         {!loaded && !failed && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#0a0a0f]">
-            <div className="game-spinner" />
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3" style={{ background: "#0a0a10" }}>
+            <div className="h-10 w-10 border-[3px] border-white/5 border-t-purple-500 rounded-full animate-spin" />
             <p className="text-sm text-gray-400">Loading {game.title}...</p>
-            <p className="text-[11px] text-gray-600">This may take a few seconds</p>
           </div>
         )}
 
-        {/* Error state */}
+        {/* Failed */}
         {failed && !loaded && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[#0a0a0f] p-6 text-center">
-            <svg className="h-12 w-12 text-gray-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-            </svg>
-            <p className="text-sm font-medium text-gray-300">Game failed to load</p>
-            <p className="text-xs text-gray-500 max-w-sm">
-              The game server might be slow or temporarily unavailable.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={retryLoad}
-                className="rounded-lg bg-purple-600 px-5 py-2 text-xs font-semibold text-white hover:bg-purple-500 transition-colors active:scale-95"
-              >
-                Retry
-              </button>
-              <button
-                onClick={onClose}
-                className="rounded-lg border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold text-gray-300 hover:bg-white/10 transition-colors active:scale-95"
-              >
-                Back to Games
-              </button>
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 p-6 text-center" style={{ background: "#0a0a10" }}>
+            <p className="text-sm font-medium text-gray-300">Failed to load game</p>
+            <p className="text-xs text-gray-500 max-w-xs">The game server may be slow. Try again or go back.</p>
+            <div className="flex gap-2">
+              <button onClick={retry} className="rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white hover:bg-purple-500 active:scale-95">Retry</button>
+              <button onClick={onClose} className="rounded-lg border border-white/10 px-4 py-2 text-xs font-medium text-gray-300 hover:bg-white/5 active:scale-95">Back</button>
             </div>
           </div>
         )}
 
-        {/* Iframe */}
+        {/* THE IFRAME — sandbox includes allow-popups for GameDistribution SDK */}
         <iframe
           ref={iframeRef}
           src={game.url}
           title={`Play ${game.title}`}
-          className="h-full w-full border-0"
-          allow="fullscreen; autoplay; gamepad; accelerometer; gyroscope"
-          sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms"
-          onLoad={handleLoad}
-          onError={handleError}
+          className="absolute inset-0 h-full w-full border-0"
+          allow="fullscreen; autoplay; gamepad; accelerometer; gyroscope; clipboard-write"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms allow-pointer-lock allow-presentation"
+          onLoad={onLoad}
+          onError={onError}
           referrerPolicy="no-referrer"
           style={{ touchAction: "manipulation", colorScheme: "normal" }}
         />
       </div>
 
-      {/* ── Bottom info bar ── */}
-      <div className="flex h-10 shrink-0 items-center gap-3 border-t border-white/5 bg-[#0d0d14] px-3 sm:px-5">
-        <span className="text-[10px] sm:text-[11px] text-gray-500 truncate">
-          {game.category} — {game.description.slice(0, 80)}...
-        </span>
-        <span className="ml-auto text-[10px] text-gray-600 shrink-0">
-          {isMobile ? "Tap to play" : "Click to interact"}
-        </span>
+      {/* ── Bottom bar ── */}
+      <div className="flex h-8 shrink-0 items-center px-3 sm:px-4 text-[10px] text-gray-600" style={{ background: "#0e0e16", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <span className="truncate">{game.category} &middot; {game.description.slice(0, 60)}</span>
+        <span className="ml-auto shrink-0">{isMobile ? "Tap to play" : "Press ESC to close"}</span>
       </div>
     </div>
   );
