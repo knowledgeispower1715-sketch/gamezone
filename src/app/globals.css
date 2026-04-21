@@ -2,36 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Dark gaming theme ── */
+/* ══════════════════════════════════════════════
+   DARK GAMING THEME — black → purple → blue
+   ══════════════════════════════════════════════ */
+
 html {
   color-scheme: dark;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
 }
 
+body {
+  background: linear-gradient(
+    165deg,
+    #030712 0%,
+    #0a0618 25%,
+    #0f0b2e 50%,
+    #0a1628 75%,
+    #030712 100%
+  );
+  background-attachment: fixed;
+}
+
 /* Prevent zoom on mobile inputs */
 @media (max-width: 640px) {
-  input,
-  select,
-  textarea {
+  input, select, textarea {
     font-size: 16px !important;
   }
 }
 
-/* Custom scrollbar */
+/* ── Glassmorphism utility ── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Neon glow accents ── */
+.neon-glow {
+  box-shadow:
+    0 0 15px rgba(139, 92, 246, 0.15),
+    0 0 45px rgba(139, 92, 246, 0.08);
+}
+.neon-glow-hover:hover {
+  box-shadow:
+    0 0 20px rgba(139, 92, 246, 0.25),
+    0 0 60px rgba(139, 92, 246, 0.12);
+}
+.neon-text {
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+}
+
+/* ── Custom scrollbar ── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: rgba(139, 92, 246, 0.3);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: rgba(139, 92, 246, 0.5);
 }
 
 /* Purple selection */
@@ -39,46 +79,32 @@ html {
   background: rgba(139, 92, 246, 0.35);
 }
 
-/* ── Animations ── */
+/* ══════════════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════════════ */
 
 /* Glow pulse for hero */
 @keyframes glow-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.7;
-  }
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
 }
 .animate-glow-pulse {
-  animation: glow-pulse 3s ease-in-out infinite;
+  animation: glow-pulse 4s ease-in-out infinite;
 }
 
-/* Fade-in-up for sections */
+/* Fade-in-up */
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in-up {
-  animation: fade-in-up 0.4s ease-out both;
+  animation: fade-in-up 0.5s ease-out both;
 }
 
-/* Audio pulse for "Tap to Play" button */
+/* Audio pulse for "Tap to Play" */
 @keyframes audio-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 0 12px rgba(139, 92, 246, 0);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5); }
+  50% { box-shadow: 0 0 0 14px rgba(139, 92, 246, 0); }
 }
 .audio-pulse {
   animation: audio-pulse 1.5s ease-in-out infinite;
@@ -94,40 +120,56 @@ html {
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-/* ── Fullscreen game area ── */
+/* Shimmer for skeleton loaders */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════
+   FULLSCREEN GAME AREA
+   ══════════════════════════════════════════════ */
 div:fullscreen {
   background: #000;
 }
-div:fullscreen .aspect-video {
-  aspect-ratio: auto;
+div:fullscreen > div {
+  aspect-ratio: auto !important;
+  max-height: none !important;
   height: 100vh;
   width: 100vw;
 }
-
-/* ── Mobile touch improvements ── */
-@media (max-width: 640px) {
-  .grid {
-    gap: 0.625rem;
-  }
+div:fullscreen iframe {
+  height: 100% !important;
+  width: 100% !important;
 }
 
-/* Prevent pull-to-refresh in game iframe */
+/* ══════════════════════════════════════════════
+   MOBILE TOUCH + IFRAME IMPROVEMENTS
+   ══════════════════════════════════════════════ */
 iframe {
   touch-action: manipulation;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
-/* Reduce motion for users who prefer it */
+/* Mobile grid spacing */
+@media (max-width: 640px) {
+  .grid {
+    gap: 0.5rem;
+  }
+}
+
+/* ── Reduce motion preference ── */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -142,5 +184,10 @@ iframe {
 
 /* Thumbnail placeholder while loading */
 img[loading="lazy"] {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #0a0618 0%, #0f0b2e 100%);
+}
+
+/* No horizontal overflow on body */
+html, body {
+  overflow-x: hidden;
 }

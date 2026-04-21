@@ -9,7 +9,7 @@
 //
 // EVERY game loads INSIDE the iframe — no external redirects.
 // All games are English-only, modern, mobile + desktop compatible.
-// Tested for Vercel / Next.js production deployment.
+// Platform-aware: each game tagged for mobile, desktop, or both.
 // ================================================================
 
 export type Category =
@@ -19,12 +19,15 @@ export type Category =
   | "Shooter"
   | "Casual";
 
+export type Platform = "mobile" | "desktop" | "both";
+
 export type GameTag = "popular" | "new" | "recommended";
 
 export interface Game {
   id: string;
   title: string;
   category: Category;
+  platform: Platform;
   thumb: string;
   url: string;
   description: string;
@@ -44,7 +47,7 @@ const thumb = (id: string) =>
   `https://picsum.photos/seed/${id}/512/384`;
 
 // ──────────────────────────────────────────────────────────
-// 40 GAMES — 8 per category
+// 40 GAMES — 8 per category, platform-tagged
 // ──────────────────────────────────────────────────────────
 
 export const games: Game[] = [
@@ -55,6 +58,7 @@ export const games: Game[] = [
     id: "stickman-kombat",
     title: "Stickman Kombat",
     category: "Action",
+    platform: "both",
     thumb: thumb("stickman-kombat"),
     url: "https://html5.gamedistribution.com/6d3928f393774157a7aed692f08ee011/",
     description:
@@ -65,6 +69,7 @@ export const games: Game[] = [
     id: "knight-arena",
     title: "Knight Arena",
     category: "Action",
+    platform: "desktop",
     thumb: thumb("knight-arena"),
     url: "https://html5.gamedistribution.com/9fcd52e69f0c4b9da545f4d5e8ad723b/",
     description:
@@ -75,6 +80,7 @@ export const games: Game[] = [
     id: "tunnel-rush",
     title: "Tunnel Rush",
     category: "Action",
+    platform: "both",
     thumb: thumb("tunnel-rush"),
     url: "https://html5.gamedistribution.com/59bbba689dce41ddb2a4fbcbeb855cee/",
     description:
@@ -85,6 +91,7 @@ export const games: Game[] = [
     id: "helix-stack",
     title: "Helix Stack 3D",
     category: "Action",
+    platform: "mobile",
     thumb: thumb("helix-stack"),
     url: "https://html5.gamedistribution.com/e825195ef8274b1cb326bf5362780424/",
     description:
@@ -95,6 +102,7 @@ export const games: Game[] = [
     id: "geometry-rush",
     title: "Geometry Rush",
     category: "Action",
+    platform: "both",
     thumb: thumb("geometry-rush"),
     url: "https://html5.gamedistribution.com/563a3f252c6e4ef8a7fa4a59b9f47c5c/",
     description:
@@ -105,6 +113,7 @@ export const games: Game[] = [
     id: "dragon-blaze",
     title: "Dragon Blaze",
     category: "Action",
+    platform: "desktop",
     thumb: thumb("dragon-blaze"),
     url: "https://itch.io/embed-upload/10842144?color=1a1a2e",
     description:
@@ -115,6 +124,7 @@ export const games: Game[] = [
     id: "paper-snakes",
     title: "Paper Snakes",
     category: "Action",
+    platform: "both",
     thumb: thumb("paper-snakes"),
     url: "https://html5.gamedistribution.com/62014c3dd1dc4b13b8fb3013a8949639/",
     description:
@@ -125,6 +135,7 @@ export const games: Game[] = [
     id: "bubble-game",
     title: "Bubble Game 3",
     category: "Action",
+    platform: "mobile",
     thumb: thumb("bubble-game"),
     url: "https://html5.gamedistribution.com/27673bc45d2e4b27b7cd24e422f7c257/",
     description:
@@ -138,6 +149,7 @@ export const games: Game[] = [
     id: "moto-x3m",
     title: "Moto X3M",
     category: "Racing",
+    platform: "both",
     thumb: thumb("moto-x3m"),
     url: "https://html5.gamedistribution.com/5b0abd4c0faa4f5eb190a9a16d5a1b4c/",
     description:
@@ -148,6 +160,7 @@ export const games: Game[] = [
     id: "drift-boss",
     title: "Drift Boss",
     category: "Racing",
+    platform: "mobile",
     thumb: thumb("drift-boss"),
     url: "https://html5.gamedistribution.com/0a8b51e5eaee42e7b4db83ca00afc92e/",
     description:
@@ -158,6 +171,7 @@ export const games: Game[] = [
     id: "top-speed-3d",
     title: "Top Speed Racing 3D",
     category: "Racing",
+    platform: "desktop",
     thumb: thumb("top-speed-3d"),
     url: "https://html5.gamedistribution.com/e1704c5264514b4d8a1ab33308269250/",
     description:
@@ -168,6 +182,7 @@ export const games: Game[] = [
     id: "f1-racing",
     title: "F1 Racing",
     category: "Racing",
+    platform: "desktop",
     thumb: thumb("f1-racing"),
     url: "https://html5.gamedistribution.com/97f2eff444fd411aa5b5b73ce6d4926e/",
     description:
@@ -178,6 +193,7 @@ export const games: Game[] = [
     id: "drag-racing",
     title: "Drag Racing",
     category: "Racing",
+    platform: "both",
     thumb: thumb("drag-racing"),
     url: "https://html5.gamedistribution.com/ad8fa388ce234b03b598c347e4fac8fa/",
     description:
@@ -188,6 +204,7 @@ export const games: Game[] = [
     id: "subway-surfer",
     title: "Subway Surfer",
     category: "Racing",
+    platform: "mobile",
     thumb: thumb("subway-surfer"),
     url: "https://html5.gamedistribution.com/8baa45aabd504c1ab7a6c4ee9b1a336f/",
     description:
@@ -198,6 +215,7 @@ export const games: Game[] = [
     id: "endless-runner",
     title: "Endless Runner 3D",
     category: "Racing",
+    platform: "mobile",
     thumb: thumb("endless-runner"),
     url: "https://html5.gamedistribution.com/06be3a6f9a984ac3b83db72147f5cbc4/",
     description:
@@ -208,6 +226,7 @@ export const games: Game[] = [
     id: "superspeed-xd",
     title: "SuperSpeed XD",
     category: "Racing",
+    platform: "desktop",
     thumb: thumb("superspeed-xd"),
     url: "https://itch.io/embed-upload/2176008?color=333333",
     description:
@@ -222,6 +241,7 @@ export const games: Game[] = [
     id: "chess",
     title: "Chess",
     category: "Puzzle",
+    platform: "both",
     thumb: "https://playpager.com/embed/chess/img/icon.png",
     url: "https://playpager.com/embed/chess/index.html",
     description:
@@ -232,6 +252,7 @@ export const games: Game[] = [
     id: "checkers",
     title: "Checkers",
     category: "Puzzle",
+    platform: "both",
     thumb: "https://playpager.com/embed/checkers/img/icon.png",
     url: "https://playpager.com/embed/checkers/index.html",
     description:
@@ -242,6 +263,7 @@ export const games: Game[] = [
     id: "sudoku",
     title: "Sudoku",
     category: "Puzzle",
+    platform: "both",
     thumb: "https://playpager.com/embed/sudoku/img/icon.png",
     url: "https://playpager.com/embed/sudoku/index.html",
     description:
@@ -252,6 +274,7 @@ export const games: Game[] = [
     id: "reversi",
     title: "Reversi",
     category: "Puzzle",
+    platform: "both",
     thumb: thumb("reversi"),
     url: "https://playpager.com/embed/reversi/index.html",
     description:
@@ -262,6 +285,7 @@ export const games: Game[] = [
     id: "word-puzzle",
     title: "Word Puzzle",
     category: "Puzzle",
+    platform: "mobile",
     thumb: thumb("word-puzzle"),
     url: "https://playpager.com/embed/wordpuzzle/index.html",
     description:
@@ -272,6 +296,7 @@ export const games: Game[] = [
     id: "mahjong-connect",
     title: "Mahjong Connect",
     category: "Puzzle",
+    platform: "desktop",
     thumb: thumb("mahjong-connect"),
     url: "https://html5.gamedistribution.com/a7f5393b417346268657f3bd67eac24e/",
     description:
@@ -282,6 +307,7 @@ export const games: Game[] = [
     id: "block-puzzle",
     title: "Block Puzzle Jewel",
     category: "Puzzle",
+    platform: "mobile",
     thumb: thumb("block-puzzle"),
     url: "https://html5.gamedistribution.com/415961cf27fb44759c184d150b301f54/",
     description:
@@ -292,6 +318,7 @@ export const games: Game[] = [
     id: "merge-fruit",
     title: "Merge Fruit",
     category: "Puzzle",
+    platform: "mobile",
     thumb: thumb("merge-fruit"),
     url: "https://html5.gamedistribution.com/2dee9d404697435aa76111eb4015e1d5/",
     description:
@@ -306,6 +333,7 @@ export const games: Game[] = [
     id: "zombie-killer",
     title: "Zombie Killer",
     category: "Shooter",
+    platform: "desktop",
     thumb: thumb("zombie-killer"),
     url: "https://html5.gamedistribution.com/58123f23619347ec868bf2892a0b7ec5/",
     description:
@@ -316,6 +344,7 @@ export const games: Game[] = [
     id: "battle-tank",
     title: "Battle Tank",
     category: "Shooter",
+    platform: "desktop",
     thumb: thumb("battle-tank"),
     url: "https://html5.gamedistribution.com/a6c29f69d4414cada11ee4e3f3dc4f1a/",
     description:
@@ -326,6 +355,7 @@ export const games: Game[] = [
     id: "army-combat",
     title: "Army Combat",
     category: "Shooter",
+    platform: "desktop",
     thumb: thumb("army-combat"),
     url: "https://html5.gamedistribution.com/8f48d982f0394ff4acf7140e7d02bffa/",
     description:
@@ -336,6 +366,7 @@ export const games: Game[] = [
     id: "stickman-sniper",
     title: "Stickman Sniper",
     category: "Shooter",
+    platform: "both",
     thumb: thumb("stickman-sniper"),
     url: "https://html5.gamedistribution.com/5f64d55ddf874545a9cc1fdc37fcf4f6/",
     description:
@@ -346,6 +377,7 @@ export const games: Game[] = [
     id: "battleship-war",
     title: "Battleship War",
     category: "Shooter",
+    platform: "both",
     thumb: thumb("battleship-war"),
     url: "https://html5.gamedistribution.com/85dcb4270a524c31810cdeeeaf311bec/",
     description:
@@ -356,6 +388,7 @@ export const games: Game[] = [
     id: "bubble-shooter-extreme",
     title: "Bubble Shooter Extreme",
     category: "Shooter",
+    platform: "mobile",
     thumb: thumb("bubble-shooter-extreme"),
     url: "https://html5.gamedistribution.com/c3f0f0c6731a4d908d978fb7906a0b17/",
     description:
@@ -366,6 +399,7 @@ export const games: Game[] = [
     id: "bubble-shooter-hd",
     title: "Bubble Shooter HD",
     category: "Shooter",
+    platform: "mobile",
     thumb: thumb("bubble-shooter-hd"),
     url: "https://html5.gamedistribution.com/79a7db22af5f420eb9d56e28fffca87b/",
     description:
@@ -376,6 +410,7 @@ export const games: Game[] = [
     id: "bubble-hit",
     title: "Bubble Hit",
     category: "Shooter",
+    platform: "both",
     thumb: thumb("bubble-hit"),
     url: "https://html5.gamedistribution.com/502af82350a44582b6e51d467285a8c0/",
     description:
@@ -390,6 +425,7 @@ export const games: Game[] = [
     id: "solitaire",
     title: "Solitaire",
     category: "Casual",
+    platform: "both",
     thumb: thumb("solitaire"),
     url: "https://playpager.com/embed/solitaire/index.html",
     description:
@@ -400,6 +436,7 @@ export const games: Game[] = [
     id: "falling-cubes",
     title: "Falling Cubes",
     category: "Casual",
+    platform: "mobile",
     thumb: thumb("falling-cubes"),
     url: "https://playpager.com/embed/cubes/index.html",
     description:
@@ -410,6 +447,7 @@ export const games: Game[] = [
     id: "mini-chess",
     title: "Mini Chess",
     category: "Casual",
+    platform: "both",
     thumb: thumb("mini-chess"),
     url: "https://playpager.com/embed/minichess/index.html",
     description:
@@ -420,6 +458,7 @@ export const games: Game[] = [
     id: "mini-checkers",
     title: "Mini Checkers",
     category: "Casual",
+    platform: "both",
     thumb: thumb("mini-checkers"),
     url: "https://playpager.com/embed/minicheckers/index.html",
     description:
@@ -430,6 +469,7 @@ export const games: Game[] = [
     id: "mini-reversi",
     title: "Mini Reversi",
     category: "Casual",
+    platform: "both",
     thumb: thumb("mini-reversi"),
     url: "https://playpager.com/embed/minireversi/index.html",
     description:
@@ -440,6 +480,7 @@ export const games: Game[] = [
     id: "2048",
     title: "2048",
     category: "Casual",
+    platform: "mobile",
     thumb: thumb("2048"),
     url: "https://gabrielecirulli.github.io/2048/",
     description:
@@ -450,6 +491,7 @@ export const games: Game[] = [
     id: "dog-surfer",
     title: "Dog Surfer",
     category: "Casual",
+    platform: "mobile",
     thumb: thumb("dog-surfer"),
     url: "https://itch.io/embed-upload/730559?color=333333",
     description:
@@ -460,6 +502,7 @@ export const games: Game[] = [
     id: "snake",
     title: "Snake",
     category: "Casual",
+    platform: "both",
     thumb: thumb("snake"),
     url: "https://patorjk.github.io/snake.io/",
     description:
@@ -485,6 +528,17 @@ export function getGamesByCategory(category: Category): Game[] {
 /** Get games by tag */
 export function getGamesByTag(tag: GameTag): Game[] {
   return games.filter((g) => g.tags?.includes(tag));
+}
+
+/** Get games filtered by platform compatibility */
+export function getGamesForPlatform(
+  isMobile: boolean,
+  gameList: Game[] = games
+): Game[] {
+  return gameList.filter((g) => {
+    if (g.platform === "both") return true;
+    return isMobile ? g.platform === "mobile" : g.platform === "desktop";
+  });
 }
 
 /** Get popular games */

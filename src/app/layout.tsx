@@ -27,12 +27,13 @@ export const metadata: Metadata = {
     template: "%s | GameZone",
   },
   description:
-    "Play 40+ free online games instantly in your browser. No downloads needed. Action, Racing, Puzzle, Shooter and Casual games — all free to play!",
+    "Play 40+ free online games instantly in your browser. No downloads needed. Action, Racing, Puzzle, Shooter and Casual games — all free to play on mobile and desktop!",
   keywords: [
     "play games online free",
     "browser games no download",
     "free online games",
     "HTML5 games",
+    "mobile games online",
     "action games online",
     "racing games online",
     "shooting games free",
@@ -85,7 +86,7 @@ export default function RootLayout({
         */}
       </head>
       <body
-        className={`${geistSans.variable} font-[family-name:var(--font-geist-sans)] min-h-screen bg-gray-950 text-gray-100 antialiased`}
+        className={`${geistSans.variable} font-[family-name:var(--font-geist-sans)] min-h-screen text-gray-100 antialiased`}
       >
         <Header />
         <main className="min-h-[calc(100vh-4rem)]">{children}</main>

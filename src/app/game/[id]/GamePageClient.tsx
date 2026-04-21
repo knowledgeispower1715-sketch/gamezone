@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import Link from "next/link";
 import type { Game } from "@/data/games";
+import { useDevice } from "@/hooks/useDevice";
 import AdBanner from "@/components/AdBanner";
 import FavoriteButton from "@/components/FavoriteButton";
 import Leaderboard from "@/components/Leaderboard";
@@ -10,12 +11,25 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useRecentlyPlayed } from "@/hooks/useRecentlyPlayed";
 import { useMostPlayed } from "@/hooks/useMostPlayed";
 
+/* ── badge colors per category ── */
 const badgeStyle: Record<string, string> = {
-  Action: "bg-blue-500/15 text-blue-300 border-blue-500/30",
-  Racing: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-  Puzzle: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
-  Shooter: "bg-red-500/15 text-red-300 border-red-500/30",
-  Casual: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+  Action: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+  Racing: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+  Puzzle: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
+  Shooter: "bg-red-500/20 text-red-300 border-red-500/30",
+  Casual: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+};
+
+const platformLabel: Record<string, string> = {
+  mobile: "Mobile",
+  desktop: "PC",
+  both: "All Devices",
+};
+
+const platformBadge: Record<string, string> = {
+  mobile: "bg-green-500/20 text-green-300 border-green-500/30",
+  desktop: "bg-sky-500/20 text-sky-300 border-sky-500/30",
+  both: "bg-purple-500/20 text-purple-300 border-purple-500/30",
 };
 
 interface Props {
@@ -24,7 +38,7 @@ interface Props {
   alsoLike: Game[];
 }
 
-// Memoized related game card
+/* ── Related-game thumbnail card ── */
 const RelatedCard = memo(function RelatedCard({
   game,
   showBadge,
@@ -35,7 +49,7 @@ const RelatedCard = memo(function RelatedCard({
   return (
     <Link
       href={`/game/${game.id}`}
-      className="group overflow-hidden rounded-xl border border-gray-800/50 bg-gray-900/40 transition-all hover:border-gray-600/50 hover:-translate-y-0.5"
+      className="group overflow-hidden rounded-xl glass-card transition-all hover:border-white/20 hover:-translate-y-0.5 active:scale-[.98]"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -72,7 +86,11 @@ const RelatedCard = memo(function RelatedCard({
   );
 });
 
+/* ═══════════════════════════════════════════════════════════
+   MAIN GAME PAGE CLIENT
+   ═══════════════════════════════════════════════════════════ */
 export default function GamePageClient({ game, related, alsoLike }: Props) {
+  const { isMobile, ready: deviceReady } = useDevice();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { addRecent } = useRecentlyPlayed();
   const { increment } = useMostPlayed();
@@ -86,7 +104,13 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
   const [showIframe, setShowIframe] = useState(false);
   const loadedRef = useRef(false);
 
-  // Track play + auto-scroll
+  /* ── Platform mismatch check ── */
+  const platformMismatch =
+    deviceReady &&
+    ((isMobile && game.platform === "desktop") ||
+      (!isMobile && game.platform === "mobile"));
+
+  /* ── Track play + auto-scroll ── */
   useEffect(() => {
     addRecent(game.id);
     increment(game.id);
@@ -99,7 +123,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     return () => clearTimeout(t);
   }, [game.id, addRecent, increment]);
 
-  // Lazy load: only mount iframe when game area is near viewport
+  /* ── Lazy load iframe when near viewport ── */
   useEffect(() => {
     const el = gameAreaRef.current;
     if (!el) {
@@ -119,7 +143,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     return () => observer.disconnect();
   }, [game.id]);
 
-  // Iframe load timeout — 25s then show fallback
+  /* ── Iframe load timeout — 25 s then fallback ── */
   useEffect(() => {
     loadedRef.current = false;
     setIframeLoaded(false);
@@ -128,10 +152,8 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     setShowIframe(false);
 
     const timeout = setTimeout(() => {
-      if (!loadedRef.current) {
-        setIframeFailed(true);
-      }
-    }, 25000);
+      if (!loadedRef.current) setIframeFailed(true);
+    }, 25_000);
 
     return () => clearTimeout(timeout);
   }, [game.id]);
@@ -142,21 +164,16 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     setIframeFailed(false);
   }, []);
 
-  // Handle iframe error
   const handleIframeError = useCallback(() => {
     setIframeFailed(true);
     setIframeLoaded(false);
   }, []);
 
-  // Enable audio + focus iframe on user tap
   const enableAudio = useCallback(() => {
     setShowAudioPrompt(false);
-    setTimeout(() => {
-      iframeRef.current?.focus();
-    }, 100);
+    setTimeout(() => iframeRef.current?.focus(), 100);
   }, []);
 
-  // Retry loading
   const retryLoad = useCallback(() => {
     loadedRef.current = false;
     setIframeFailed(false);
@@ -170,10 +187,10 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     }
     setTimeout(() => {
       if (!loadedRef.current) setIframeFailed(true);
-    }, 25000);
+    }, 25_000);
   }, []);
 
-  // Fullscreen toggle
+  /* ── Fullscreen toggle (immersive on mobile) ── */
   const toggleFullscreen = useCallback(() => {
     const el = gameAreaRef.current;
     if (!el) return;
@@ -188,7 +205,6 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
     }
   }, []);
 
-  // Fullscreen change listener (handles Esc key)
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handler);
@@ -196,21 +212,38 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
   }, []);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      {/* Nav bar */}
-      <div className="mb-4 flex items-center gap-3">
+    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+      {/* ── Nav bar ── */}
+      <div className="mb-3 flex items-center gap-2 sm:mb-4 sm:gap-3">
         <Link
           href="/"
-          className="flex items-center gap-1.5 rounded-xl bg-gray-800/60 px-3.5 py-2 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-700 hover:text-white"
+          className="flex items-center gap-1.5 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white active:scale-95"
         >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5 8.25 12l7.5-7.5"
+            />
           </svg>
           All Games
         </Link>
         <div className="flex-1" />
+        {/* Platform badge */}
         <span
-          className={`rounded-full border px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${badgeStyle[game.category] ?? "bg-gray-700 text-gray-300 border-gray-600"}`}
+          className={`rounded-full border px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider ${platformBadge[game.platform] ?? ""}`}
+        >
+          {platformLabel[game.platform]}
+        </span>
+        {/* Category badge */}
+        <span
+          className={`rounded-full border px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider ${badgeStyle[game.category] ?? "bg-gray-700 text-gray-300 border-gray-600"}`}
         >
           {game.category}
         </span>
@@ -221,15 +254,46 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         />
       </div>
 
-      {/* Game title */}
-      <h1 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
+      {/* ── Game title ── */}
+      <h1 className="mb-3 text-xl font-bold text-white sm:mb-4 sm:text-3xl">
         {game.title}
       </h1>
 
-      {/* GAME IFRAME CONTAINER */}
+      {/* ── Platform mismatch warning ── */}
+      {platformMismatch && (
+        <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 sm:p-4">
+          <svg
+            className="mt-0.5 h-5 w-5 shrink-0 text-amber-400"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+            />
+          </svg>
+          <div>
+            <p className="text-sm font-semibold text-amber-300">
+              Game not optimized for this device
+            </p>
+            <p className="mt-0.5 text-xs text-amber-200/70">
+              This game is designed for{" "}
+              <strong>{game.platform === "desktop" ? "PC" : "Mobile"}</strong>.
+              It may not display correctly. Try one of the suggested games below.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ GAME IFRAME CONTAINER ═══ */}
       <div
         ref={gameAreaRef}
-        className={`relative overflow-hidden rounded-2xl border border-gray-800/60 bg-black shadow-2xl shadow-purple-500/5 scroll-mt-4 ${isFullscreen ? "rounded-none" : ""}`}
+        className={`relative overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl shadow-purple-500/10 scroll-mt-4 ${
+          isFullscreen ? "rounded-none" : ""
+        }`}
       >
         {/* Loading spinner */}
         {!iframeLoaded && !iframeFailed && (
@@ -246,27 +310,41 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
 
         {/* Error / timeout fallback */}
         {iframeFailed && !iframeLoaded && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-gray-950 p-6 text-center">
-            <svg className="h-12 w-12 text-gray-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-gray-950 p-4 sm:p-6 text-center">
+            <svg
+              className="h-10 w-10 sm:h-12 sm:w-12 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+              />
             </svg>
             <p className="text-sm font-medium text-gray-300">
-              Game failed to load
+              {platformMismatch
+                ? "Game not supported on this device"
+                : "Game failed to load"}
             </p>
             <p className="text-xs text-gray-500 max-w-sm">
-              The game server might be slow or temporarily unavailable.
-              Try again or pick another game below.
+              {platformMismatch
+                ? `This game is designed for ${game.platform === "desktop" ? "PC" : "mobile"}. Try a compatible game below.`
+                : "The game server might be slow or temporarily unavailable. Try again or pick another game below."}
             </p>
-            <button
-              onClick={retryLoad}
-              className="rounded-lg bg-purple-600 px-6 py-2.5 text-xs font-semibold text-white hover:bg-purple-500 transition-colors"
-            >
-              Retry
-            </button>
+            {!platformMismatch && (
+              <button
+                onClick={retryLoad}
+                className="rounded-xl bg-purple-600 px-6 py-2.5 text-xs font-semibold text-white hover:bg-purple-500 transition-colors active:scale-95"
+              >
+                Retry
+              </button>
+            )}
 
-            {/* Alternative games on error */}
             {related.length > 0 && (
-              <div className="mt-4 w-full max-w-lg">
+              <div className="mt-3 w-full max-w-lg">
                 <p className="mb-2 text-xs font-medium text-gray-400">
                   Try another game:
                 </p>
@@ -275,7 +353,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
                     <Link
                       key={r.id}
                       href={`/game/${r.id}`}
-                      className="group overflow-hidden rounded-lg border border-gray-800/50 bg-gray-900/60 transition-all hover:border-gray-600/50"
+                      className="group overflow-hidden rounded-lg glass-card transition-all hover:border-white/20 active:scale-95"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -312,9 +390,13 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
               enableAudio();
             }}
           >
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-purple-500/30 bg-gray-900/90 px-8 py-6 shadow-2xl shadow-purple-500/20">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg shadow-purple-500/40 audio-pulse">
-                <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-purple-500/30 bg-gray-900/90 px-6 py-5 sm:px-8 sm:py-6 shadow-2xl shadow-purple-500/20">
+              <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg shadow-purple-500/40 audio-pulse">
+                <svg
+                  className="h-7 w-7 sm:h-8 sm:w-8"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </div>
@@ -328,8 +410,16 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           </div>
         )}
 
-        {/* Responsive iframe with proper permissions */}
-        <div className="aspect-video w-full">
+        {/* ═══ RESPONSIVE IFRAME ═══
+             Desktop → 16:9 full width
+             Mobile  → constrained height, 4:3 adaptive  */}
+        <div
+          className={`w-full ${
+            isMobile
+              ? "aspect-[4/3] max-h-[70vh]"
+              : "aspect-video"
+          }`}
+        >
           {showIframe && (
             <iframe
               ref={iframeRef}
@@ -351,45 +441,79 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
           )}
         </div>
 
-        {/* Bottom controls */}
-        <div className="absolute bottom-3 right-3 z-20 flex gap-2">
+        {/* Bottom controls bar */}
+        <div className="absolute bottom-2 right-2 z-20 flex gap-2 sm:bottom-3 sm:right-3">
           <button
             onClick={toggleFullscreen}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/60 text-gray-300 backdrop-blur-sm transition-all hover:bg-black/80 hover:text-white sm:h-10 sm:w-10"
+            className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-black/60 text-gray-300 backdrop-blur-sm border border-white/10 transition-all hover:bg-black/80 hover:text-white active:scale-90"
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           >
             {isFullscreen ? (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25"
+                />
               </svg>
             ) : (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
+                />
               </svg>
             )}
           </button>
         </div>
       </div>
 
-      {/* Below-game ad */}
+      {/* ── Below-game ad ── */}
       <AdBanner slot="below-game" className="mt-4" />
 
-      {/* Game info + Leaderboard */}
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-gray-800/60 bg-gray-900/40 p-4">
+      {/* ── Game info + Leaderboard ── */}
+      <div className="mt-5 grid gap-3 sm:mt-6 sm:gap-4 md:grid-cols-2">
+        <div className="glass-card rounded-xl p-4">
           <h2 className="mb-2 text-sm font-semibold text-gray-200">
             About This Game
           </h2>
           <p className="text-sm leading-relaxed text-gray-400">
             {game.description}
           </p>
-          <div className="mt-4 rounded-lg bg-gray-800/40 p-3">
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span
+              className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${platformBadge[game.platform]}`}
+            >
+              {platformLabel[game.platform]}
+            </span>
+            <span
+              className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${badgeStyle[game.category]}`}
+            >
+              {game.category}
+            </span>
+          </div>
+          <div className="mt-3 rounded-lg bg-white/5 p-3">
             <p className="text-xs text-gray-500">
-              <strong className="text-gray-300">Controls:</strong> Use keyboard
-              and mouse. Tap the game area on mobile to focus.{" "}
+              <strong className="text-gray-300">Controls:</strong>{" "}
+              {isMobile
+                ? "Tap and swipe to play. "
+                : "Use keyboard and mouse. "}
               <button
                 onClick={toggleFullscreen}
-                className="mx-1 inline-flex items-center rounded border border-gray-600 bg-gray-700 px-1.5 py-0.5 text-[10px] text-purple-300 hover:bg-gray-600 transition-colors"
+                className="mx-1 inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-purple-300 hover:bg-white/10 transition-colors active:scale-95"
               >
                 Fullscreen
               </button>{" "}
@@ -400,13 +524,13 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         <Leaderboard gameId={game.id} gameTitle={game.title} />
       </div>
 
-      {/* Related games (same category) */}
+      {/* ── Related games (same category) ── */}
       {related.length > 0 && (
-        <section className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold text-gray-200">
+        <section className="mt-8 sm:mt-10">
+          <h2 className="mb-3 text-base font-semibold text-gray-200 sm:mb-4 sm:text-lg">
             More {game.category} Games
           </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
             {related.map((r) => (
               <RelatedCard key={r.id} game={r} />
             ))}
@@ -414,13 +538,13 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         </section>
       )}
 
-      {/* You May Also Like (different categories) */}
+      {/* ── You May Also Like ── */}
       {alsoLike.length > 0 && (
-        <section className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold text-gray-200">
+        <section className="mt-8 sm:mt-10">
+          <h2 className="mb-3 text-base font-semibold text-gray-200 sm:mb-4 sm:text-lg">
             You May Also Like
           </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
             {alsoLike.map((r) => (
               <RelatedCard key={r.id} game={r} showBadge />
             ))}
