@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ══════════════════════════════════════════════
-   DARK GAMING THEME — black → purple → blue
-   ══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   PREMIUM GAMING DASHBOARD — Animated Dark Theme
+   ══════════════════════════════════════════════════════ */
 
 html {
   color-scheme: dark;
@@ -13,15 +13,58 @@ html {
 }
 
 body {
+  background: #030712;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── Animated gradient background ── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
   background: linear-gradient(
-    165deg,
+    135deg,
     #030712 0%,
-    #0a0618 25%,
-    #0f0b2e 50%,
-    #0a1628 75%,
+    #0a0618 20%,
+    #0f0b2e 40%,
+    #130d3a 50%,
+    #0a1628 70%,
     #030712 100%
   );
-  background-attachment: fixed;
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 0%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* ── Floating particle orbs ── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 600px 600px at 15% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 500px at 85% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 400px at 50% 80%, rgba(168, 85, 247, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 300px 300px at 70% 60%, rgba(99, 102, 241, 0.04) 0%, transparent 70%);
+  animation: orbFloat 15s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  33% { transform: translate(20px, -30px) scale(1.05); opacity: 1; }
+  66% { transform: translate(-15px, 15px) scale(0.97); opacity: 0.85; }
+  100% { transform: translate(10px, -10px) scale(1.02); opacity: 0.95; }
 }
 
 /* Prevent zoom on mobile inputs */
@@ -35,8 +78,8 @@ body {
 .glass-card {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .glass-card:hover {
   background: rgba(255, 255, 255, 0.07);
@@ -52,10 +95,11 @@ body {
 .neon-glow-hover:hover {
   box-shadow:
     0 0 20px rgba(139, 92, 246, 0.25),
-    0 0 60px rgba(139, 92, 246, 0.12);
+    0 0 60px rgba(139, 92, 246, 0.12),
+    0 0 90px rgba(139, 92, 246, 0.05);
 }
 .neon-text {
-  text-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 60px rgba(139, 92, 246, 0.15);
 }
 
 /* ── Custom scrollbar ── */
@@ -86,7 +130,7 @@ body {
 /* Glow pulse for hero */
 @keyframes glow-pulse {
   0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.05); }
+  50% { opacity: 0.6; transform: scale(1.08); }
 }
 .animate-glow-pulse {
   animation: glow-pulse 4s ease-in-out infinite;
@@ -94,11 +138,48 @@ body {
 
 /* Fade-in-up */
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in-up {
-  animation: fade-in-up 0.5s ease-out both;
+  animation: fade-in-up 0.6s ease-out both;
+}
+
+/* Slide-in from right */
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.5s ease-out both;
+}
+
+/* Scale-in */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in {
+  animation: scale-in 0.4s ease-out both;
+}
+
+/* Floating animation for hero elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Shimmer text effect */
+@keyframes shimmer-text {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.shimmer-text {
+  background-size: 200% auto;
+  animation: shimmer-text 4s linear infinite;
 }
 
 /* Audio pulse for "Tap to Play" */
@@ -132,6 +213,43 @@ body {
   background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Staggered animation delays for grid items */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+
+/* ══════════════════════════════════════════════
+   DASHBOARD SPECIFIC STYLES
+   ══════════════════════════════════════════════ */
+
+/* Section heading underline accent */
+.section-heading {
+  position: relative;
+  display: inline-block;
+}
+.section-heading::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 40px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #8b5cf6, #6366f1);
+}
+
+/* Horizontal scroll container — hide scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* ══════════════════════════════════════════════
@@ -174,6 +292,12 @@ iframe {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  body::before {
+    animation: none !important;
+  }
+  body::after {
+    animation: none !important;
   }
 }
 

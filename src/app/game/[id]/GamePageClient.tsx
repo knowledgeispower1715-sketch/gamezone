@@ -7,6 +7,7 @@ import { useDevice } from "@/hooks/useDevice";
 import AdBanner from "@/components/AdBanner";
 import FavoriteButton from "@/components/FavoriteButton";
 import Leaderboard from "@/components/Leaderboard";
+import Footer from "@/components/Footer";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useRecentlyPlayed } from "@/hooks/useRecentlyPlayed";
 import { useMostPlayed } from "@/hooks/useMostPlayed";
@@ -212,7 +213,8 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
   }, []);
 
   return (
-    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+    <>
+    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
       {/* ── Nav bar ── */}
       <div className="mb-3 flex items-center gap-2 sm:mb-4 sm:gap-3">
         <Link
@@ -527,7 +529,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
       {/* ── Related games (same category) ── */}
       {related.length > 0 && (
         <section className="mt-8 sm:mt-10">
-          <h2 className="mb-3 text-base font-semibold text-gray-200 sm:mb-4 sm:text-lg">
+          <h2 className="section-heading mb-3 text-base font-semibold text-gray-200 sm:mb-4 sm:text-lg">
             More {game.category} Games
           </h2>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
@@ -541,7 +543,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
       {/* ── You May Also Like ── */}
       {alsoLike.length > 0 && (
         <section className="mt-8 sm:mt-10">
-          <h2 className="mb-3 text-base font-semibold text-gray-200 sm:mb-4 sm:text-lg">
+          <h2 className="section-heading mb-3 text-base font-semibold text-gray-200 sm:mb-4 sm:text-lg">
             You May Also Like
           </h2>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-5">
@@ -552,5 +554,7 @@ export default function GamePageClient({ game, related, alsoLike }: Props) {
         </section>
       )}
     </div>
+    <Footer />
+    </>
   );
 }
