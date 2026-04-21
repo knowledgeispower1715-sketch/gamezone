@@ -24,7 +24,7 @@ export default function SearchBar({
         placeholder="Search games..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 outline-none transition-all focus:border-purple-500/50 focus:bg-white/8 focus:ring-2 focus:ring-purple-500/20"
+        className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] py-2.5 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 outline-none transition-colors focus:border-purple-500/40 focus:bg-white/[0.04]"
       />
     </div>
   );

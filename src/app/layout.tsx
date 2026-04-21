@@ -16,7 +16,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: "#030712",
+  themeColor: "#08080d",
 };
 
 // ── SEO Metadata ──
@@ -72,6 +72,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://playpager.com" />
         <link rel="dns-prefetch" href="https://html5.gamedistribution.com" />
         <link rel="dns-prefetch" href="https://itch.io" />
+        <link rel="dns-prefetch" href="https://img.gamedistribution.com" />
         <link rel="dns-prefetch" href="https://picsum.photos" />
 
         {/*

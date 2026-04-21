@@ -2,9 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ══════════════════════════════════════════════════════
-   PREMIUM GAMING DASHBOARD — Animated Dark Theme
-   ══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   GAMEZONE — Clean Professional Dark Theme
+   Performance-first: no heavy animations on body
+   ══════════════════════════════════════════════ */
 
 html {
   color-scheme: dark;
@@ -13,58 +14,7 @@ html {
 }
 
 body {
-  background: #030712;
-  position: relative;
-  overflow-x: hidden;
-}
-
-/* ── Animated gradient background ── */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background: linear-gradient(
-    135deg,
-    #030712 0%,
-    #0a0618 20%,
-    #0f0b2e 40%,
-    #130d3a 50%,
-    #0a1628 70%,
-    #030712 100%
-  );
-  background-size: 400% 400%;
-  animation: gradientShift 20s ease infinite;
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 0%; }
-  25% { background-position: 100% 0%; }
-  50% { background-position: 100% 100%; }
-  75% { background-position: 0% 100%; }
-  100% { background-position: 0% 0%; }
-}
-
-/* ── Floating particle orbs ── */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(ellipse 600px 600px at 15% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 500px 500px at 85% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 70%),
-    radial-gradient(ellipse 400px 400px at 50% 80%, rgba(168, 85, 247, 0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 300px 300px at 70% 60%, rgba(99, 102, 241, 0.04) 0%, transparent 70%);
-  animation: orbFloat 15s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-
-@keyframes orbFloat {
-  0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
-  33% { transform: translate(20px, -30px) scale(1.05); opacity: 1; }
-  66% { transform: translate(-15px, 15px) scale(0.97); opacity: 0.85; }
-  100% { transform: translate(10px, -10px) scale(1.02); opacity: 0.95; }
+  background: #08080d;
 }
 
 /* Prevent zoom on mobile inputs */
@@ -74,203 +24,79 @@ body::after {
   }
 }
 
-/* ── Glassmorphism utility ── */
+/* ── Glassmorphism ── */
 .glass-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* ── Neon glow accents ── */
+/* ── Subtle glow ── */
 .neon-glow {
-  box-shadow:
-    0 0 15px rgba(139, 92, 246, 0.15),
-    0 0 45px rgba(139, 92, 246, 0.08);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
 }
 .neon-glow-hover:hover {
-  box-shadow:
-    0 0 20px rgba(139, 92, 246, 0.25),
-    0 0 60px rgba(139, 92, 246, 0.12),
-    0 0 90px rgba(139, 92, 246, 0.05);
-}
-.neon-text {
-  text-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 60px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.18);
 }
 
-/* ── Custom scrollbar ── */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.3);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.5);
-}
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.15); }
+::selection { background: rgba(139, 92, 246, 0.3); }
 
-/* Purple selection */
-::selection {
-  background: rgba(139, 92, 246, 0.35);
-}
+/* ── Hide scrollbar utility ── */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
 
 /* ══════════════════════════════════════════════
-   ANIMATIONS
+   ANIMATIONS — smooth, minimal, performant
    ══════════════════════════════════════════════ */
 
-/* Glow pulse for hero */
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.08); }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-.animate-glow-pulse {
-  animation: glow-pulse 4s ease-in-out infinite;
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out both;
 }
 
-/* Fade-in-up */
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out both;
+  animation: fade-in-up 0.35s ease-out both;
 }
 
-/* Slide-in from right */
-@keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(24px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-.animate-slide-in-right {
-  animation: slide-in-right 0.5s ease-out both;
-}
-
-/* Scale-in */
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
-}
-.animate-scale-in {
-  animation: scale-in 0.4s ease-out both;
-}
-
-/* Floating animation for hero elements */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* Shimmer text effect */
-@keyframes shimmer-text {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-.shimmer-text {
-  background-size: 200% auto;
-  animation: shimmer-text 4s linear infinite;
-}
-
-/* Audio pulse for "Tap to Play" */
-@keyframes audio-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5); }
-  50% { box-shadow: 0 0 0 14px rgba(139, 92, 246, 0); }
-}
-.audio-pulse {
-  animation: audio-pulse 1.5s ease-in-out infinite;
-}
-
-/* Game loading spinner */
-.game-spinner {
-  width: 48px;
-  height: 48px;
-  border: 3px solid rgba(139, 92, 246, 0.15);
-  border-top-color: #8b5cf6;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* Shimmer for skeleton loaders */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
-}
-
-/* Staggered animation delays for grid items */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
-.stagger-6 { animation-delay: 0.3s; }
-
-/* ══════════════════════════════════════════════
-   DASHBOARD SPECIFIC STYLES
-   ══════════════════════════════════════════════ */
-
-/* Section heading underline accent */
-.section-heading {
-  position: relative;
-  display: inline-block;
-}
-.section-heading::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -4px;
+/* Game loading spinner */
+.game-spinner {
   width: 40px;
-  height: 3px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, #8b5cf6, #6366f1);
-}
-
-/* Horizontal scroll container — hide scrollbar */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.06);
+  border-top-color: #8b5cf6;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
 
 /* ══════════════════════════════════════════════
-   FULLSCREEN GAME AREA
+   FULLSCREEN GAME
    ══════════════════════════════════════════════ */
-div:fullscreen {
-  background: #000;
-}
-div:fullscreen > div {
-  aspect-ratio: auto !important;
-  max-height: none !important;
-  height: 100vh;
-  width: 100vw;
-}
-div:fullscreen iframe {
-  height: 100% !important;
-  width: 100% !important;
-}
+div:fullscreen { background: #000; }
+div:fullscreen iframe { height: 100% !important; width: 100% !important; }
 
 /* ══════════════════════════════════════════════
-   MOBILE TOUCH + IFRAME IMPROVEMENTS
+   IFRAME TOUCH
    ══════════════════════════════════════════════ */
 iframe {
   touch-action: manipulation;
@@ -278,14 +104,7 @@ iframe {
   overscroll-behavior: contain;
 }
 
-/* Mobile grid spacing */
-@media (max-width: 640px) {
-  .grid {
-    gap: 0.5rem;
-  }
-}
-
-/* ── Reduce motion preference ── */
+/* ── Reduce motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -293,25 +112,13 @@ iframe {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  body::before {
-    animation: none !important;
-  }
-  body::after {
-    animation: none !important;
-  }
 }
 
-/* GPU-accelerated transitions for cards */
-.group {
-  will-change: transform;
-}
-
-/* Thumbnail placeholder while loading */
+/* Thumbnail placeholder */
 img[loading="lazy"] {
-  background: linear-gradient(135deg, #0a0618 0%, #0f0b2e 100%);
+  background: #111118;
 }
 
-/* No horizontal overflow on body */
 html, body {
   overflow-x: hidden;
 }
