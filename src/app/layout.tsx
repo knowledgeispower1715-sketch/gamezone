@@ -16,7 +16,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: "#08080d",
+  themeColor: "#0f0f1a",
 };
 
 // ── SEO Metadata ──

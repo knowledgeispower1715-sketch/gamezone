@@ -36,10 +36,10 @@ export default function CategoryFilter({
           <button
             key={tab.value}
             onClick={() => onPlatformChange(tab.value)}
-            className={`rounded-lg px-3 py-2 text-[11px] sm:text-xs font-medium transition-colors active:scale-95 ${
+            className={`rounded-xl px-3 py-2 text-[11px] sm:text-xs font-medium transition-all active:scale-95 ${
               activePlatform === tab.value
-                ? "bg-purple-600 text-white"
-                : "border border-white/[0.06] bg-white/[0.02] text-gray-400 hover:text-gray-200"
+                ? "btn-primary text-white shadow-sm"
+                : "border border-white/[0.06] bg-white/[0.02] text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]"
             }`}
           >
             {tab.label}
@@ -53,10 +53,10 @@ export default function CategoryFilter({
           <button
             key={tab.value}
             onClick={() => onCategoryChange(tab.value)}
-            className={`rounded-lg px-2.5 sm:px-3 py-2 text-[11px] sm:text-xs font-medium transition-colors active:scale-95 ${
+            className={`rounded-xl px-2.5 sm:px-3 py-2 text-[11px] sm:text-xs font-medium transition-all active:scale-95 ${
               activeCategory === tab.value
-                ? "bg-white/10 text-white"
-                : "border border-white/[0.06] bg-white/[0.02] text-gray-400 hover:text-gray-200"
+                ? "bg-white/10 text-white border border-white/15"
+                : "border border-white/[0.06] bg-white/[0.02] text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]"
             }`}
           >
             {tab.label}
